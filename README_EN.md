@@ -5,12 +5,36 @@ You can easily modify conditions without launching the game, just like using the
 
 ---
 
+## ⚠️ Important Disclaimer & Testing Status
+
+**Please note that this tool has not undergone extensive testing for complex condition configurations or deep edge cases.**
+I have primarily tested the features I frequently use, so unforeseen issues may occur. 
+
+> [!IMPORTANT]
+> It is highly recommended to **backup your animation folders** before using this tool. 
+
+If you encounter any problems, please report them, and I will do my best to address them and provide fixes.
+
+---
+
 ## Key Features
 
 - **Simplified UI**: Functions found in the in-game UI have been streamlined for ease of use without sacrificing functionality.
 - **Auto Mod Base Creation**: Added a feature to automatically generate a mod base with the OAR folder structure.
 - **Folder Creation**: You can now create specific condition folders directly within the tool.
 - **Hybrid Editing**: Integrated a system that allows both UI-based condition editing and a raw JSON editor.
+
+---
+
+## ⚠️ 주의 사항 및 테스트 현황
+
+**이 툴은 복잡한 컨디션을 구성하거나 심도 깊은 테스트는 진행하지 않았습니다.**
+제가 자주 사용하는 기능들만 테스트해봤기 때문에 혹시나 문제가 생길 수도 있습니다.
+
+> [!IMPORTANT]
+> 작업을 시작하기 전에 반드시 **애니메이션 폴더를 백업**한 후 사용하시는 것을 권장합니다.
+
+문제가 있다면 제보해 주세요. 최대한 확인하여 수정하겠습니다.
 
 ---
 
