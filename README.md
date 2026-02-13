@@ -5,6 +5,14 @@ You can easily modify conditions without launching the game, just like using the
 
 ---
 
+## 💻 System Requirements
+
+- **OS**: Windows 10 or 11 (64-bit)
+- **Runtime**: [.NET 9.0 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/9.0) (Required)
+- **WebView2**: [Microsoft Edge WebView2 Runtime](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) (Required, usually pre-installed)
+
+---
+
 ## ⚠️ Important Disclaimer & Testing Status
 
 **Please note that this tool has not undergone extensive testing for complex condition configurations or deep edge cases.**

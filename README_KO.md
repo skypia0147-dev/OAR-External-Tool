@@ -5,6 +5,14 @@
 
 ---
 
+## 💻 요구 사항 (System Requirements)
+
+- **운영체제**: Windows 10 또는 11 (64비트)
+- **런타임**: [.NET 9.0 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/9.0) (실행을 위해 필수 설치 필요)
+- **WebView2**: [Microsoft Edge WebView2 Runtime](https://developer.microsoft.com/ko-kr/microsoft-edge/webview2/) (필수, 최신 윈도우에는 보통 포함됨)
+
+---
+
 ## 주요 기능
 
 - **간소화된 UI**: 인게임 UI에서 사용되는 기능들을 효율적으로 간소화하여 사용함에 불편함 없이 구성했습니다.
