@@ -5,7 +5,7 @@ You can easily modify conditions without launching the game, just like using the
 
 ---
 
-## 💻 System Requirements
+## System Requirements
 
 - **OS**: Windows 10 or 11 (64-bit)
 - **Runtime**: [.NET 9.0 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/9.0) (Required)
@@ -13,7 +13,7 @@ You can easily modify conditions without launching the game, just like using the
 
 ---
 
-## ⚠️ Important Disclaimer & Testing Status
+## Important Disclaimer & Testing Status
 
 **Please note that this tool has not undergone extensive testing for complex condition configurations or deep edge cases.**
 I have primarily tested the features I frequently use, so unforeseen issues may occur. 
