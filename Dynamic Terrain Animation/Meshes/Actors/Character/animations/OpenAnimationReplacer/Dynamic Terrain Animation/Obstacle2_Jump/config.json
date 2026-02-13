@@ -1,0 +1,27 @@
+{
+    "name": "Obstacle2_Jump",
+    "priority": 8080060,
+    "conditions": [
+        {
+            "condition": "IsActorBase",
+            "requiredVersion": "1.0.0.0",
+            "Actor base": {
+                "pluginName": "Skyrim.esm",
+                "formID": "7"
+            }
+        },
+        {
+            "condition": "RaySense_Obstacle",
+            "requiredPlugin": "Open Animation Replacer - RaySense",
+            "requiredVersion": "1.0.0.0",
+            "Comparison": ">=",
+            "Distance": {
+                "value": 200.0
+            }
+        },
+        {
+            "condition": "IsRunning",
+            "requiredVersion": "1.0.0.0"
+        }
+    ]
+}

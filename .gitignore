@@ -1,0 +1,17 @@
+# .gitignore for OAR External Tool
+
+# .NET
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Web
+node_modules/
+.DS_Store
+
+# Temporary files
+*.tmp
+*.log

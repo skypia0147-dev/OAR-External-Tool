@@ -1,0 +1,2365 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OAR External Tool</title>
+    <style>
+        :root {
+            --bg-color: #0b0e14;
+            --sidebar-bg: #12151c;
+            --accent-color: #4f46e5;
+            --accent-hover: #6366f1;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border-color: #1e293b;
+            --glass-bg: rgba(30, 41, 59, 0.5);
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+            --font-mono: 'Fira Code', 'Cascadia Code', monospace;
+        }
+
+        .hidden,
+        .oar-modal-hidden {
+            display: none !important;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        #app {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        header {
+            height: 52px;
+            background: var(--sidebar-bg);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 24px;
+            z-index: 100;
+            backdrop-filter: blur(8px);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 800;
+            letter-spacing: -0.025em;
+        }
+
+        .oar-text {
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 1.75rem;
+        }
+
+        .editor-text {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn.primary {
+            background-color: var(--accent-color);
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+        }
+
+        .btn.primary:hover {
+            background-color: var(--accent-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn.secondary {
+            background-color: #1e293b;
+            color: var(--text-primary);
+            border-color: var(--border-color);
+        }
+
+        .btn.secondary:hover {
+            background-color: #334155;
+        }
+
+        .btn.success {
+            background-color: #059669;
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(5, 150, 105, 0.2);
+        }
+
+        .btn.warning {
+            background-color: #d97706;
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(217, 119, 6, 0.2);
+        }
+
+        .btn.pink {
+            background-color: #db2777;
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(219, 39, 119, 0.2);
+        }
+
+        .btn.pink:hover {
+            background-color: #be185d;
+            transform: translateY(-1px);
+        }
+
+        .btn.danger {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        .btn.small {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        main {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        #sidebar {
+            width: 360px;
+            min-width: 200px;
+            max-width: 600px;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        #resizer {
+            width: 4px;
+            cursor: col-resize;
+            background-color: var(--border-color);
+            transition: background-color 0.2s;
+            z-index: 10;
+        }
+
+        #resizer:hover,
+        #resizer.resizing {
+            background-color: var(--accent-color);
+            width: 4px;
+        }
+
+        .sidebar-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .sidebar-header .top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .badge {
+            background: rgba(79, 70, 229, 0.15);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            color: #818cf8;
+            border: 1px solid rgba(79, 70, 229, 0.3);
+            font-weight: 700;
+        }
+
+        .tree-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        /* Hierarchy Styles */
+        .tree-node {
+            margin-left: 12px;
+            border-left: 1px solid #1e293b;
+        }
+
+        .tree-node.root {
+            margin-left: 0;
+            border-left: none;
+        }
+
+        .tree-item {
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s;
+            margin: 4px 0;
+            color: var(--text-secondary);
+        }
+
+        .tree-item:hover {
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-primary);
+        }
+
+        .tree-item.selected {
+            background: linear-gradient(90deg, var(--accent-color), #6366f1);
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+        }
+
+        .tree-item .priority-badge {
+            font-size: 0.7rem;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: var(--success);
+            font-family: var(--font-mono);
+        }
+
+        .tree-item.selected .priority-badge {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .folder-item {
+            font-weight: 500;
+            color: var(--text-secondary);
+            opacity: 0.8;
+            pointer-events: none;
+        }
+
+        .empty-msg {
+            color: var(--text-secondary);
+            text-align: center;
+            margin-top: 60px;
+            font-size: 0.9rem;
+            opacity: 0.6;
+            padding: 20px;
+        }
+
+        #editor-area {
+            flex: 1;
+            background-color: var(--bg-color);
+            overflow-y: auto;
+            padding: 20px;
+            position: relative;
+        }
+
+        .editor-placeholder {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            text-align: center;
+            gap: 24px;
+        }
+
+        .placeholder-icon {
+            font-size: 4rem;
+            opacity: 0.2;
+        }
+
+        .editor-header {
+            margin-bottom: 16px;
+        }
+
+        .file-path-breadcrumb {
+            font-family: var(--font-mono);
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            margin-top: 8px;
+            background: #1e293b;
+            padding: 4px 12px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .config-section {
+            background-color: var(--sidebar-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px 14px;
+            margin-bottom: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .section-header h3 {
+            font-size: 1.25rem;
+            color: var(--text-primary);
+            font-weight: 700;
+            letter-spacing: -0.01em;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        input,
+        select,
+        textarea {
+            background-color: #0b0e14;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            outline: none;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .condition-card {
+            background-color: #1a1f29;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            margin-bottom: 4px;
+            transition: transform 0.2s;
+        }
+
+        .condition-card:hover {
+            border-color: #334155;
+        }
+
+        .cond-header {
+            background: rgba(255, 255, 255, 0.02);
+            padding: 4px 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .cond-header:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .cond-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .cond-summary {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            opacity: 0.8;
+            margin-left: 8px;
+        }
+
+        .cond-toggle {
+            font-size: 0.7rem;
+            margin-right: 8px;
+            transition: transform 0.2s;
+            color: var(--text-secondary);
+        }
+
+        .condition-card.collapsed .cond-toggle {
+            transform: rotate(-90deg);
+        }
+
+        .condition-card.collapsed .cond-body,
+        .condition-card.collapsed .cond-header {
+            border-bottom: none;
+        }
+
+        .condition-card.collapsed .cond-body {
+            display: none;
+        }
+
+        .cond-type-tag {
+            font-family: var(--font-mono);
+            font-weight: 700;
+            color: #fbbf24;
+            font-size: 0.85rem;
+            background: rgba(251, 191, 36, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .cond-negated {
+            font-size: 0.75rem;
+            color: var(--danger);
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .cond-body {
+            padding: 10px;
+        }
+
+        .property-row {
+            display: grid;
+            grid-template-columns: 140px 1fr;
+            gap: 12px;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .property-label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            padding-top: 8px;
+        }
+
+        .property-value-group {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px dashed #334155;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 8px;
+        }
+
+        .nested-field {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nested-field span {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            min-width: 65px;
+            text-align: right;
+            text-transform: uppercase;
+        }
+
+        /* Modal & Category Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal {
+            background: var(--sidebar-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            width: 800px;
+            height: 600px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-columns {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .category-sidebar {
+            width: 180px;
+            border-right: 1px solid var(--border-color);
+            padding: 16px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .cat-btn {
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            margin-bottom: 4px;
+            transition: all 0.2s;
+            color: var(--text-secondary);
+        }
+
+        .cat-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+        }
+
+        .cat-btn.active {
+            background: var(--accent-color);
+            color: white;
+            font-weight: 600;
+        }
+
+        .options-grid {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+            align-content: flex-start;
+        }
+
+        .cond-opt {
+            padding: 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            cursor: pointer;
+            background: #1e293b;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .cond-opt:hover {
+            border-color: var(--accent-color);
+            background: rgba(79, 70, 229, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .cond-opt .title {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+        }
+
+        .cond-opt .desc {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        footer {
+            height: 36px;
+            background-color: var(--sidebar-bg);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .status-active {
+            color: var(--success);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-active::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: var(--success);
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-in {
+            animation: slideUp 0.4s cubic-bezier(0, 0, 0.2, 1);
+        }
+
+        /* Status Colors */
+        #status-msg.info {
+            color: #60a5fa;
+        }
+
+        #status-msg.error {
+            color: var(--danger);
+            font-weight: bold;
+        }
+
+        #status-msg.warning {
+            color: var(--warning);
+        }
+
+        #status-msg.success {
+            color: var(--success);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+
+        /* Nesting & DND */
+        .cond-children {
+            margin-top: 16px;
+            padding-left: 20px;
+            border-left: 2px dashed #475569;
+            min-height: 40px;
+            transition: background 0.2s;
+        }
+
+        .cond-children.drag-over {
+            background: rgba(79, 70, 229, 0.1);
+            border-left-color: var(--accent-color);
+        }
+
+        .condition-card.dragging {
+            opacity: 0.5;
+            transform: scale(0.95);
+        }
+
+        .condition-card.drag-over-top {
+            border-top: 3px solid var(--accent-color);
+        }
+
+        .condition-card.drag-over-bottom {
+            border-bottom: 3px solid var(--accent-color);
+        }
+
+        .nest-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        /* Search Styles */
+        .search-area {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .search-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .search-group label {
+            font-size: 0.7rem;
+            opacity: 0.5;
+            letter-spacing: 0.05em;
+        }
+
+        .search-input {
+            background: #0b0e14;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            width: 100%;
+        }
+
+        .priority-filter {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .priority-badge {
+            background: var(--accent-color);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+
+        .user-config-badge {
+            background: var(--success);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.65rem;
+            font-weight: 800;
+            margin-left: 4px;
+        }
+
+        .tree-node {
+            margin-left: 12px;
+            border-left: 1px solid var(--border-color);
+            position: relative;
+        }
+
+        /* Raw Editor Styles - Professional Code Editor */
+        .raw-editor-container {
+            position: relative;
+            background: #0b0e14;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            overflow: hidden;
+            height: calc(100vh - 280px);
+            min-height: 500px;
+            display: flex;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .line-numbers {
+            width: 45px;
+            padding: 20px 0;
+            background: #0f172a;
+            border-right: 1px solid #1e293b;
+            color: #475569;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            text-align: right;
+            padding-right: 12px;
+            user-select: none;
+            overflow: hidden;
+        }
+
+        .editor-wrapper {
+            position: relative;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* The interaction layer */
+        .raw-editor-textarea {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 20px !important;
+            margin: 0;
+            background: transparent !important;
+            color: transparent !important;
+            /* Text is invisible, interaction is active */
+            caret-color: white !important;
+            /* Show white cursor/caret */
+            border: none !important;
+            outline: none !important;
+            font-family: var(--font-mono) !important;
+            font-size: 0.95rem !important;
+            line-height: 1.6 !important;
+            white-space: pre !important;
+            overflow: auto !important;
+            z-index: 2;
+            resize: none;
+        }
+
+        /* The visual layer */
+        .highlight-display {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+            margin: 0;
+            font-family: var(--font-mono);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            white-space: pre;
+            color: #d1d5db;
+            pointer-events: none;
+            /* Let clicks pass through to textarea */
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        /* Syntax Highlighting Colors */
+        .token-key {
+            color: #9cdcfe;
+        }
+
+        /* Blue-ish for keys */
+        .token-string {
+            color: #ce9178;
+        }
+
+        /* Orange-ish for strings */
+        .token-number {
+            color: #b5cea8;
+        }
+
+        /* Green-ish for numbers */
+        .token-boolean {
+            color: #569cd6;
+        }
+
+        /* Blue for booleans */
+        .token-null {
+            color: #569cd6;
+        }
+
+        /* Blue for null */
+        .token-bracket {
+            color: #ffd700;
+        }
+
+        /* Yellow for brackets */
+
+        .raw-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 16px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <header>
+            <div class="logo">
+                <span class="oar-text">OAR</span>
+                <span class="editor-text">External Tool</span>
+            </div>
+            <div class="actions">
+                <button id="btn-open-folder" class="btn primary">Open MOD</button>
+                <button id="btn-create-mod" class="btn pink">Create Mod</button>
+                <button id="btn-save-user" class="btn success">Save User</button>
+                <button id="btn-save-base" class="btn warning">Save Base</button>
+            </div>
+        </header>
+
+        <main>
+            <aside id="sidebar">
+                <div class="sidebar-header">
+                    <div class="top">
+                        <h3>Hierarchy</h3>
+                        <div id="file-count" class="badge">0 CONFIGS</div>
+                    </div>
+                    <button id="btn-new-config" class="btn small success" style="width: 100%; margin-top: 4px;">+ New
+                        Config</button>
+                </div>
+                <div class="search-area">
+                    <div class="search-group">
+                        <label>SEARCH MOD NAME</label>
+                        <input type="text" id="search-name" class="search-input" placeholder="Type to search...">
+                    </div>
+                    <div class="search-group">
+                        <label>PRIORITY RANGE</label>
+                        <div class="priority-filter">
+                            <input type="number" id="filter-min-p" class="search-input" placeholder="Min">
+                            <input type="number" id="filter-max-p" class="search-input" placeholder="Max">
+                        </div>
+                    </div>
+                </div>
+                <div id="file-tree" class="tree-container">
+                    <p class="empty-msg">Select a folder containing OAR mods (e.g., meshes/.../OpenAnimationReplacer)
+                    </p>
+                </div>
+            </aside>
+
+            <div id="resizer"></div>
+
+            <section id="editor-area">
+                <div id="editor-placeholder" class="editor-placeholder">
+                    <div class="placeholder-icon">📁</div>
+                    <h2>OAR External Tool</h2>
+                    <p>Select an OAR mod folder to get started.</p>
+                    <button id="btn-initial-open" class="btn primary"
+                        style="margin-top: 20px; padding: 15px 30px; font-size: 1.1rem;">Open MOD</button>
+                </div>
+
+                <div id="editor-content" class="editor-content hidden">
+                    <div class="editor-header">
+                        <div class="file-info-main">
+                            <div class="name-row">
+                                <h2 id="current-file-name">Select a Config</h2>
+                                <button id="btn-toggle-raw" class="btn small secondary" style="margin-left: auto;">Edit
+                                    Raw JSON</button>
+                            </div>
+                            <div id="current-file-path" class="file-path-breadcrumb">No file selected</div>
+                        </div>
+                    </div>
+                    <div id="ui-editor-content">
+                        <!-- General -->
+                        <div class="config-section animate-in">
+                            <div class="section-header">
+                                <h3>General Settings</h3>
+                            </div>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>Priority</label>
+                                    <input type="number" id="config-priority" value="0">
+                                </div>
+                                <div class="form-group">
+                                    <label>Active Mod Name</label>
+                                    <input type="text" id="config-name" placeholder="Animation set name...">
+                                </div>
+                                <div class="form-group extra-metadata">
+                                    <label>Author</label>
+                                    <input type="text" id="config-author" placeholder="Author name...">
+                                </div>
+                                <div class="form-group extra-metadata">
+                                    <label>Version</label>
+                                    <input type="text" id="config-version" placeholder="1.0.0">
+                                </div>
+                                <div class="form-group extra-metadata" style="grid-column: span 2;">
+                                    <label>Description</label>
+                                    <textarea id="config-description" rows="2"
+                                        placeholder="Optional description..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Conditions -->
+                        <div class="config-section animate-in">
+                            <div class="section-header">
+                                <h3>Animation Conditions</h3>
+                                <div style="display: flex; gap: 8px;">
+                                    <button id="btn-paste-condition" class="btn small secondary">Paste</button>
+                                    <button id="btn-add-condition-modal" class="btn small success">+ Add
+                                        Condition</button>
+                                </div>
+                            </div>
+                            <div id="conditions-list" class="conditions-list">
+                                <!-- Condition cards injected here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Raw Editor (Code-style) -->
+                    <div id="raw-editor-content" class="raw-editor-container hidden">
+                        <div id="line-numbers" class="line-numbers"></div>
+                        <div class="editor-wrapper">
+                            <pre id="highlight-display" class="highlight-display"></pre>
+                            <textarea id="raw-json-textarea" class="raw-editor-textarea" spellcheck="false"></textarea>
+                        </div>
+                    </div>
+                    <div id="raw-actions" class="raw-actions hidden">
+                        <span style="font-size:0.8rem; color:var(--text-secondary)">Editing Raw JSON Mode</span>
+                        <button id="btn-apply-raw" class="btn primary">Apply Changes</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <span id="status-msg" class="status-active">System Ready</span>
+            <span>OAR v2.3.0 Support Layer • Build 2024.02.13-v1.0.11</span>
+        </footer>
+    </div>
+
+    <!-- Modal for adding conditions -->
+    <div id="modal-container" class="modal-overlay oar-modal-hidden">
+        <div class="modal animate-in">
+            <div class="modal-header">
+                <h3 id="modal-title">Select Condition Type</h3>
+                <button class="btn secondary small close-modal">✕</button>
+            </div>
+            <div class="modal-columns">
+                <div class="category-sidebar" id="category-list">
+                    <!-- Categories -->
+                </div>
+                <div class="options-grid" id="condition-options">
+                    <!-- Options -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Create Mod -->
+    <div id="modal-create-mod" class="modal-overlay oar-modal-hidden">
+        <div class="modal animate-in" style="width: 500px; height: auto; max-height: 90vh;">
+            <div class="modal-header">
+                <h3>Create New OAR Mod</h3>
+                <button class="btn secondary small close-modal">✕</button>
+            </div>
+            <div style="padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+                <div class="form-group">
+                    <label>Mod Name</label>
+                    <input type="text" id="new-mod-name" placeholder="e.g., MyEpicAnimations">
+                </div>
+                <div class="form-group">
+                    <label>Author</label>
+                    <input type="text" id="new-mod-author" placeholder="Your Name">
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="new-mod-desc" rows="3" placeholder="Description of the mod..."></textarea>
+                </div>
+                <div style="margin-top: 8px; font-size: 0.8rem; color: var(--text-secondary);">
+                    * Clicking confirm will open a folder picker to select the installation path.
+                </div>
+                <button id="btn-confirm-create-mod" class="btn primary" style="width: 100%; margin-top: 12px;">🚀
+                    Confirm & Select Save Path</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for New Config -->
+    <div id="modal-new-config" class="modal-overlay oar-modal-hidden">
+        <div class="modal animate-in" style="width: 400px; height: auto;">
+            <div class="modal-header">
+                <h3>+ Add New Configuration</h3>
+                <button class="btn secondary small close-modal">✕</button>
+            </div>
+            <div style="padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+                <div class="form-group">
+                    <label>Priority</label>
+                    <input type="number" id="new-cfg-priority" value="10000">
+                </div>
+                <div class="form-group">
+                    <label>Animation Name</label>
+                    <input type="text" id="new-cfg-name" placeholder="e.g., MyJumpAnim">
+                </div>
+                <button id="btn-confirm-new-config" class="btn success" style="width: 100%; margin-top: 12px;">✅ Create
+                    Configuration</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden input for folder pick fallback -->
+    <input type="file" id="folder-input" webkitdirectory directory multiple class="hidden">
+
+    <script>
+        /**
+         * OAR Condition Templates & Categories
+         * Extracted directly from OpenAnimationReplacer source code (InitFactories)
+         */
+        const CATEGORIES = {
+            "RaySense": ["RaySense_Verticality", "RaySense_Obstacle", "RaySense_ObstacleType"],
+            "Core": ["AND", "OR", "XOR", "TARGET", "PLAYER", "MOUNT", "PRESET"],
+            "Actor Status": ["IsFemale", "IsChild", "IsPlayerTeammate", "Level", "IsUnique", "IsClass", "IsCombatStyle", "IsVoiceType", "IsAttacking", "IsRunning", "IsSneaking", "IsSprinting", "IsInAir", "IsInCombat", "IsWeaponDrawn", "IsBlocking", "IsTalking", "IdleTime", "LifeState", "SitSleepState", "Scale", "Height", "Weight", "MovementSpeed"],
+            "Items & Combat": ["IsEquipped", "IsEquippedType", "IsEquippedHasKeyword", "IsWorn", "IsWornHasKeyword", "InventoryCount", "InventoryCountHasKeyword", "EquippedObjectWeight", "CurrentCastingType", "CurrentDeliveryType", "AttackState"],
+            "Environment": ["IsInInterior", "IsInLocation", "LocationHasKeyword", "CurrentWeather", "CurrentWeatherHasFlag", "CurrentGameTime"],
+            "Global & Data": ["IsForm", "IsActorBase", "IsRace", "HasKeyword", "HasMagicEffect", "HasMagicEffectWithKeyword", "HasPerk", "HasSpell", "HasGraphVariable", "CompareValues", "FactionRank", "IsQuestStageDone", "IsOnMount", "IsRiding", "CurrentFurniture", "HasTarget", "CurrentTargetDistance", "IsInScene", "IsDoingFavor", "Random"]
+        };
+
+        const CONDITION_TEMPLATES = {
+            // Core
+            "AND": { desc: "All child conditions must be true.", schema: { "Conditions": [] } },
+            "OR": { desc: "At least one child condition must be true.", schema: { "Conditions": [] } },
+            "XOR": { desc: "Exactly one child condition must be true.", schema: { "Conditions": [] } },
+            "TARGET": { desc: "Evaluate child conditions for the current target.", schema: { "Conditions": [] } },
+            "PLAYER": { desc: "Evaluate child conditions for the player.", schema: { "Conditions": [] } },
+            "MOUNT": { desc: "Evaluate child conditions for the mount.", schema: { "Conditions": [] } },
+            "PRESET": { desc: "Reusable condition preset.", schema: { "Preset": { "name": "" } } },
+
+            // RaySense Extensions
+            "RaySense_Verticality": { desc: "RaySense: Height difference sensors.", schema: { "Sensor (0:Front, 1:Left, 2:Right, 3:Player)": 0, "Comparison": 3, "Value": 0 } },
+            "RaySense_Obstacle": { desc: "RaySense: Check distance to front obstacle.", schema: { "Comparison": 4, "Distance": 100 } },
+            "RaySense_ObstacleType": { desc: "RaySense: Check front obstacle FormType/Material.", schema: { "Comparison": 0, "Type": 0 } },
+
+            // Forms & Keywords
+            "HasKeyword": { desc: "Checks for a specific keyword.", schema: { "Keyword": { "editorID": "" } } },
+            "IsForm": { desc: "Checks for a specific Form ID.", schema: { "Form": { "editorID": "", "pluginName": "" } } },
+            "IsActorBase": { desc: "Checks ActorBase form.", schema: { "Form": { "editorID": "", "pluginName": "" } } },
+            "IsRace": { desc: "Checks actor race.", schema: { "Form": { "editorID": "", "pluginName": "" } } },
+            "HasPerk": { desc: "Checks for a perk.", schema: { "Perk": { "editorID": "", "pluginName": "" } } },
+            "HasSpell": { desc: "Checks for a spell.", schema: { "Spell": { "editorID": "", "pluginName": "" } } },
+            "HasMagicEffect": { desc: "Checks for a magic effect.", schema: { "Magic effect": { "editorID": "", "pluginName": "" } } },
+
+            // Actor Status
+            "Level": { desc: "Checks actor level.", schema: { "Comparison": 3, "Type": 1 } },
+            "IsFemale": { desc: "Checks if actor is female.", schema: {} },
+            "IsChild": { desc: "Checks if actor is a child.", schema: {} },
+            "IsSneaking": { desc: "Checks if actor is sneaking.", schema: {} },
+            "IsRunning": { desc: "Checks if actor is running.", schema: {} },
+            "IsSprinting": { desc: "Checks if actor is sprinting.", schema: {} },
+            "IsInAir": { desc: "Checks if actor is jumping/falling.", schema: {} },
+            "IsInCombat": { desc: "Checks if actor is in combat.", schema: {} },
+            "IsWeaponDrawn": { desc: "Checks if weapon is drawn.", schema: {} },
+            "IsBlocking": { desc: "Checks if actor is blocking.", schema: {} },
+            "IsAttacking": { desc: "Checks if actor is attacking.", schema: {} },
+            "Random": { desc: "Random chance (0-1).", schema: { "Value": 0.5 } },
+
+            // Equipment
+            "IsEquipped": { desc: "Checks equipped item.", schema: { "Left hand": false, "Form": { "editorID": "", "pluginName": "" } } },
+            "IsEquippedType": { desc: "Checks equipped weapon type.", schema: { "Left hand": false, "Type": 0 } },
+            "IsEquippedHasKeyword": { desc: "Equipped item has keyword.", schema: { "Left hand": false, "Keyword": { "editorID": "" } } },
+            "IsWorn": { desc: "Checks if item is worn (Armor).", schema: { "Form": { "editorID": "", "pluginName": "" } } },
+
+            // Numeric Core (Complex Handler)
+            "CompareValues": { desc: "Compares two numeric values.", schema: { "Value A": 0, "Comparison": 0, "Value B": 0 } }
+        };
+
+        // Populate basic templates for missing ones in the list to avoid errors
+        Object.values(CATEGORIES).flat().forEach(name => {
+            if (!CONDITION_TEMPLATES[name]) {
+                CONDITION_TEMPLATES[name] = { desc: "Standard OAR Condition Component.", schema: {} };
+            }
+        });
+
+        const COMP_OPS = { 0: "==", 1: "!=", 2: ">", 3: ">=", 4: "<", 5: "<=" };
+        const NUM_TYPES = { 0: "Static", 1: "Global", 2: "ActorValue", 3: "GraphVar" };
+
+        class OAREditor {
+            constructor() {
+                this.configs = new Map();
+                this.currentPath = null;
+                this.isSecureContext = window.showDirectoryPicker !== undefined;
+                this.currentCategory = "Core";
+                this.activeConditionsTarget = null;
+                this.draggedElement = null;
+                this.draggedData = null;
+
+                this.filters = {
+                    nameSearch: '',
+                    minPriority: null,
+                    maxPriority: null
+                };
+
+                this.conditionClipboard = null;
+                this.isRawEditing = false;
+                this.rootHandle = null;
+
+                this.init();
+                this.initResizer();
+            }
+
+            initResizer() {
+                const resizer = document.getElementById('resizer');
+                const sidebar = document.getElementById('sidebar');
+                let isResizing = false;
+
+                resizer.addEventListener('mousedown', (e) => {
+                    isResizing = true;
+                    document.body.style.cursor = 'col-resize';
+                    resizer.classList.add('resizing');
+                    e.preventDefault();
+                });
+
+                document.addEventListener('mousemove', (e) => {
+                    if (!isResizing) return;
+
+                    const newWidth = e.clientX;
+                    if (newWidth >= 200 && newWidth <= 600) {
+                        sidebar.style.width = `${newWidth}px`;
+                    }
+                });
+
+                document.addEventListener('mouseup', () => {
+                    if (isResizing) {
+                        isResizing = false;
+                        document.body.style.cursor = 'default';
+                        resizer.classList.remove('resizing');
+                    }
+                });
+            }
+
+            escapeHTML(str) {
+                if (typeof str !== 'string') return str;
+                const div = document.createElement('div');
+                div.textContent = str;
+                return div.innerHTML;
+            }
+
+            init() {
+                const btnOpen = document.getElementById('btn-open-folder');
+                const btnInitialOpen = document.getElementById('btn-initial-open');
+                const btnSaveBase = document.getElementById('btn-save-base');
+                const btnSaveUser = document.getElementById('btn-save-user');
+                const folderInput = document.getElementById('folder-input');
+
+                const openHandler = () => this.isSecureContext ? this.handleNativeOpen() : folderInput.click();
+                if (btnOpen) btnOpen.onclick = openHandler;
+                if (btnInitialOpen) btnInitialOpen.onclick = openHandler;
+
+                folderInput.onchange = (e) => this.handleFallbackOpen(e.target.files);
+                if (btnSaveBase) btnSaveBase.onclick = () => this.handleSave();
+                if (btnSaveUser) btnSaveUser.onclick = () => this.handleSaveUserConfig();
+
+                document.getElementById('btn-create-mod').onclick = () => this.showCreateModModal();
+                document.getElementById('btn-confirm-create-mod').onclick = () => this.handleCreateMod();
+                document.getElementById('btn-new-config').onclick = () => this.showNewConfigModal();
+                document.getElementById('btn-confirm-new-config').onclick = () => this.handleCreateNewConfig();
+                document.getElementById('btn-toggle-raw').onclick = () => this.toggleRawEditor();
+                document.getElementById('btn-apply-raw').onclick = () => this.applyRawChanges();
+                document.getElementById('btn-paste-condition').onclick = () => {
+                    const config = this.configs.get(this.currentPath);
+                    if (!config) return;
+                    this.pasteCondition(this.activeConditionsTarget || config.data.conditions);
+                };
+
+                document.getElementById('btn-add-condition-modal').onclick = () => this.showAddConditionModal();
+                document.querySelectorAll('.close-modal').forEach(el => el.onclick = () => this.closeModal());
+
+                // Search Listeners
+                const filterInputs = ['search-name', 'filter-min-p', 'filter-max-p'];
+                filterInputs.forEach(id => {
+                    const el = document.getElementById(id);
+                    el.oninput = () => {
+                        this.filters.nameSearch = document.getElementById('search-name').value.toLowerCase();
+                        this.filters.minPriority = document.getElementById('filter-min-p').value === '' ? null : parseInt(document.getElementById('filter-min-p').value);
+                        this.filters.maxPriority = document.getElementById('filter-max-p').value === '' ? null : parseInt(document.getElementById('filter-max-p').value);
+                        this.renderTree();
+                    };
+                });
+
+                // Categories
+                this.renderCategories();
+
+                // Ensure modal is hidden
+                this.closeModal();
+
+                // Start heartbeat
+                this.startHeartbeat();
+            }
+
+            startHeartbeat() {
+                // Send heartbeat every 3 seconds to keep the launcher alive
+                setInterval(() => {
+                    fetch('/heartbeat').catch(() => { });
+                }, 3000);
+            }
+
+            setStatus(msg, isWarning = false) {
+                const el = document.getElementById('status-msg');
+                el.textContent = msg;
+                el.className = isWarning ? 'status-active' : 'status-active'; // styling logic
+            }
+
+            renderCategories() {
+                const container = document.getElementById('category-list');
+                container.innerHTML = '';
+                Object.keys(CATEGORIES).forEach(cat => {
+                    const btn = document.createElement('div');
+                    btn.className = `cat-btn ${cat === this.currentCategory ? 'active' : ''}`;
+                    btn.textContent = cat;
+                    btn.onclick = () => {
+                        this.currentCategory = cat;
+                        this.renderCategories();
+                        this.renderOptions();
+                    };
+                    container.appendChild(btn);
+                });
+                this.renderOptions();
+            }
+
+            renderOptions() {
+                const container = document.getElementById('condition-options');
+                container.innerHTML = '';
+                const items = CATEGORIES[this.currentCategory];
+                items.forEach(type => {
+                    const tmpl = CONDITION_TEMPLATES[type] || { desc: "" };
+                    const opt = document.createElement('div');
+                    opt.className = 'cond-opt';
+                    opt.innerHTML = `<span class="title">${type}</span><span class="desc">${tmpl.desc}</span>`;
+                    opt.onclick = () => this.addCondition(type);
+                    container.appendChild(opt);
+                });
+            }
+
+            addCondition(type) {
+                if (!this.currentPath) {
+                    this.setStatus('Please select an animation set first.', true);
+                    this.closeModal();
+                    return;
+                }
+                const config = this.configs.get(this.currentPath);
+                if (!config) return;
+
+                const target = this.activeConditionsTarget || config.data.conditions;
+                const tmpl = CONDITION_TEMPLATES[type] || { desc: "Standard", schema: {} };
+                const newCond = {
+                    condition: type,
+                    requiredVersion: "1.0.0.0",
+                    ...JSON.parse(JSON.stringify(tmpl.schema))
+                };
+                target.push(newCond);
+                this.openEditor(this.currentPath); // Full refresh
+                this.markModified();
+                this.closeModal();
+            }
+
+            async handleNativeOpen() {
+                try {
+                    const dirHandle = await window.showDirectoryPicker();
+                    this.rootHandle = dirHandle;
+                    this.configs.clear();
+                    this.setStatus('Scanning OAR Mods...', false);
+                    await this.scanDirectoryNative(dirHandle, '', 0);
+                    this.renderTree();
+                    this.setStatus(`Load Complete: ${this.configs.size} OAR configs found.`, false);
+                } catch (err) {
+                    console.error(err);
+                    this.setStatus('Error or Cancelled', true);
+                }
+            }
+
+            async scanDirectoryNative(dirHandle, path, depth = 0) {
+                // Safety: Limit recursion depth to 15 to avoid freezing on massive drives
+                if (depth > 15) return;
+
+                const ignored = new Set(['mcm', 'textures', 'scripts', 'source', 'sound', 'music', 'fomod', 'readmes', 'interface', 'docs', 'skse', 'tools', 'video', 'lodsettings', 'grass', 'shadersfx', 'distantlod', 'menus', 'strings', 'seq', 'materials', 'facegen', '.git', 'node_modules']);
+
+                let processedInDir = 0;
+                for await (const entry of dirHandle.values()) {
+                    processedInDir++;
+
+                    // Yield to browser every 50 files to keep UI alive
+                    if (processedInDir % 50 === 0) {
+                        await new Promise(r => setTimeout(r, 0));
+                    }
+
+                    const newPath = path ? `${path}/${entry.name}` : entry.name;
+                    const lowerName = entry.name.toLowerCase();
+                    const lowerPath = newPath.toLowerCase();
+
+                    if (entry.kind === 'directory') {
+                        if (ignored.has(lowerName)) continue;
+                        await this.scanDirectoryNative(entry, newPath, depth + 1);
+                    } else if (lowerName === 'config.json' || lowerName === 'user.json') {
+                        // Strict OAR Validation
+                        if (lowerPath.includes('openanimationreplacer')) {
+                            const file = await entry.getFile();
+                            const data = JSON.parse(await file.text());
+                            this.configs.set(newPath, {
+                                handle: entry,
+                                parentHandle: dirHandle, // Needed to create user.json
+                                isUser: lowerName === 'user.json',
+                                data,
+                                modified: false,
+                                path: newPath
+                            });
+
+                            // Periodic UI update (every 10 configs) to show progress
+                            if (this.configs.size % 10 === 0) {
+                                this.renderTree();
+                                this.setStatus(`Found ${this.configs.size} configs...`, false);
+                                await new Promise(r => setTimeout(r, 0));
+                            }
+                        }
+                    }
+                }
+            }
+
+            async handleFallbackOpen(files) {
+                this.configs.clear();
+                this.setStatus('Analyzing files...', false);
+                let count = 0;
+                for (const file of files) {
+                    const path = file.webkitRelativePath.replace(/\\/g, '/');
+                    const lowerPath = path.toLowerCase();
+                    const name = file.name.toLowerCase();
+                    if ((name === 'config.json' || name === 'user.json') && lowerPath.includes('openanimationreplacer')) {
+                        const data = JSON.parse(await file.text());
+                        this.configs.set(path, {
+                            file,
+                            isUser: name === 'user.json',
+                            data,
+                            modified: false,
+                            path
+                        });
+                        count++;
+                        if (count % 10 === 0) {
+                            this.renderTree();
+                            await new Promise(r => setTimeout(r, 0));
+                        }
+                    }
+                }
+                this.renderTree();
+                this.setStatus(`Load Complete: ${this.configs.size} configs found.`, false);
+            }
+
+            renderTree() {
+                const container = document.getElementById('file-tree');
+
+                // Filter configurations
+                const filteredConfigs = new Map();
+                for (const [path, cfg] of this.configs.entries()) {
+                    const name = (cfg.data.name || '').toLowerCase();
+                    const pathLower = path.toLowerCase();
+                    const priority = cfg.data.priority || 0;
+
+                    // Name check
+                    const nameMatches = !this.filters.nameSearch ||
+                        name.includes(this.filters.nameSearch) ||
+                        pathLower.includes(this.filters.nameSearch);
+
+                    // Priority check
+                    const minMatches = this.filters.minPriority === null || priority >= this.filters.minPriority;
+                    const maxMatches = this.filters.maxPriority === null || priority <= this.filters.maxPriority;
+
+                    if (nameMatches && minMatches && maxMatches) {
+                        filteredConfigs.set(path, cfg);
+                    }
+                }
+
+                const hierarchy = this.buildHierarchy(filteredConfigs);
+                container.innerHTML = '';
+                document.getElementById('file-count').textContent = `${filteredConfigs.size} CONFIGS`;
+                this.renderNode(container, hierarchy, true, filteredConfigs);
+            }
+
+            buildHierarchy(configsToUse = this.configs) {
+                const tree = { children: {}, name: "Root" };
+                for (const path of configsToUse.keys()) {
+                    const parts = path.split('/');
+                    const idx = parts.indexOf('OpenAnimationReplacer');
+                    const subParts = idx !== -1 ? parts.slice(idx + 1) : parts;
+                    let current = tree;
+                    subParts.forEach((part, i) => {
+                        const isLast = i === subParts.length - 1;
+                        const isConfigFileName = part.toLowerCase().startsWith('config');
+
+                        if (isLast && isConfigFileName) {
+                            current.isConfig = true;
+                            current.fullPath = path;
+                        } else if (!isLast) {
+                            if (!current.children[part]) current.children[part] = { children: {}, name: part };
+                            current = current.children[part];
+                        }
+                    });
+                }
+                return tree;
+            }
+
+            renderNode(parentEl, node, isRoot = false, configsToUse = this.configs) {
+                const nodeEl = document.createElement('div');
+                nodeEl.className = isRoot ? 'tree-node root' : 'tree-node';
+                if (node.isConfig) {
+                    const config = configsToUse.get(node.fullPath);
+                    const item = document.createElement('div');
+                    item.className = `tree-item ${this.currentPath === node.fullPath ? 'selected' : ''}`;
+                    const modName = this.escapeHTML(config.data.name || node.name);
+                    item.innerHTML = `
+                        <div class="tree-item-label">
+                            <span>${modName}</span>
+                            ${config.isUser ? '<span class="user-config-badge">USER</span>' : ''}
+                        </div>
+                        <span class="priority-badge">${config.data.priority || 0}</span>
+                    `;
+                    item.onclick = () => this.openEditor(node.fullPath);
+                    nodeEl.appendChild(item);
+                } else if (!isRoot) {
+                    const item = document.createElement('div');
+                    item.className = 'tree-item folder-item';
+                    item.innerHTML = `<span>📁 ${node.name}</span>`;
+                    nodeEl.appendChild(item);
+                }
+                Object.values(node.children)
+                    .sort((a, b) => { // Sort by priority
+                        const pA = a.isConfig ? (configsToUse.get(a.fullPath).data.priority || 0) : -1;
+                        const pB = b.isConfig ? (configsToUse.get(b.fullPath).data.priority || 0) : -1;
+                        return pB - pA;
+                    })
+                    .forEach(child => this.renderNode(nodeEl, child, false, configsToUse));
+                parentEl.appendChild(nodeEl);
+            }
+
+            openEditor(path) {
+                this.currentPath = path;
+                const config = this.configs.get(path);
+                if (!config) {
+                    console.warn("Config not found for path:", path);
+                    return;
+                }
+                document.getElementById('editor-placeholder').classList.add('hidden');
+                document.getElementById('editor-content').classList.remove('hidden');
+                document.getElementById('current-file-name').textContent = config.data.name || "Config";
+                document.getElementById('current-file-path').textContent = path;
+
+                // Detect if this is a sub-config (more than 1 level deep from Mod root)
+                // OAR path structure: .../OpenAnimationReplacer/ModName/config.json (Root)
+                // .../OpenAnimationReplacer/ModName/Folder/config.json (Sub)
+                const parts = path.replace(/\\/g, '/').split('/OpenAnimationReplacer/');
+                let isRoot = true;
+                if (parts.length > 1) {
+                    const relative = parts[1]; // e.g. "ModName/config.json" or "ModName/Sub/config.json"
+                    const subParts = relative.split('/');
+                    // Root mod config has "ModName/config.json" -> length 2
+                    // Sub folder config has "ModName/Sub/.../config.json" -> length > 2
+                    isRoot = (subParts.length === 2);
+                }
+
+                const extraMeta = document.querySelectorAll('.extra-metadata');
+                extraMeta.forEach(el => {
+                    if (isRoot) el.classList.remove('hidden');
+                    else el.classList.add('hidden');
+                });
+
+                const priority = document.getElementById('config-priority');
+                const nameInp = document.getElementById('config-name');
+                const authorInp = document.getElementById('config-author');
+                const versionInp = document.getElementById('config-version');
+                const desc = document.getElementById('config-description');
+
+                priority.value = config.data.priority || 0;
+                nameInp.value = config.data.name || '';
+                authorInp.value = config.data.author || '';
+                versionInp.value = config.data.version || '';
+                desc.value = config.data.description || '';
+
+                const sync = () => {
+                    config.data.priority = parseInt(priority.value);
+                    config.data.name = nameInp.value;
+                    config.data.author = authorInp.value;
+                    config.data.version = versionInp.value;
+                    config.data.description = desc.value;
+                    this.markModified();
+                    this.renderTree();
+                };
+                priority.onchange = sync;
+                nameInp.oninput = sync;
+                authorInp.oninput = sync;
+                versionInp.oninput = sync;
+                desc.oninput = sync;
+
+                this.renderConditions(config.data.conditions || [], document.getElementById('conditions-list'));
+                this.renderTree();
+            }
+
+            renderConditions(conditions, container) {
+                container.innerHTML = '';
+                if (!Array.isArray(conditions)) return;
+
+                conditions.forEach((cond, idx) => {
+                    if (cond._collapsed === undefined) cond._collapsed = true;
+
+                    const card = document.createElement('div');
+                    card.className = `condition-card animate-in ${cond._collapsed ? 'collapsed' : ''}`;
+                    card.draggable = true;
+
+                    const summaryText = this.escapeHTML(this.generateConditionSummary(cond));
+
+                    card.innerHTML = `
+                        <div class="cond-header">
+                            <div class="cond-title-wrap">
+                                <span class="cond-toggle">▼</span>
+                                <span class="cond-type-tag">${this.escapeHTML(cond.condition)}</span>
+                                ${cond.negated ? '<span class="cond-negated">NOT</span>' : ''}
+                                <span class="cond-summary">${summaryText}</span>
+                            </div>
+                            <div style="display:flex;gap:8px" class="cond-actions">
+                                <button class="btn small secondary btn-negate">NOT</button>
+                                <button class="btn small secondary btn-copy">Copy</button>
+                                <button class="btn small danger btn-del">Delete</button>
+                            </div>
+                        </div>
+                    `;
+
+                    card.querySelector('.btn-copy').onclick = (e) => {
+                        e.stopPropagation();
+                        this.conditionClipboard = JSON.parse(JSON.stringify(cond));
+                        this.setStatus('Condition Copied to Clipboard', false);
+                    };
+
+                    card.querySelector('.cond-header').onclick = (e) => {
+                        if (e.target.closest('.cond-actions')) return;
+                        cond._collapsed = !cond._collapsed;
+                        card.classList.toggle('collapsed');
+                    };
+                    const body = document.createElement('div');
+                    body.className = 'cond-body';
+                    const summaryEl = card.querySelector('.cond-summary');
+                    this.buildSchemaUI(body, cond, summaryEl);
+
+                    // Recursive Nesting for AND/OR/Conditions array
+                    if (cond.Conditions && Array.isArray(cond.Conditions)) {
+                        const nestWrap = document.createElement('div');
+                        nestWrap.className = 'cond-children';
+                        nestWrap.innerHTML = `
+                            <div class="nest-header">
+                                <span>Sub-Conditions (${cond.Conditions.length})</span>
+                                <div style="display:flex;gap:4px">
+                                    <button class="btn small success btn-add-sub">+ Add Sub</button>
+                                    <button class="btn small primary btn-paste-sub">Paste</button>
+                                </div>
+                            </div>
+                            <div class="nest-list"></div>
+                        `;
+                        const nestList = nestWrap.querySelector('.nest-list');
+
+                        // Drop into folder handler
+                        nestWrap.ondragover = (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            nestWrap.classList.add('drag-over');
+                        };
+                        nestWrap.ondragleave = () => nestWrap.classList.remove('drag-over');
+                        nestWrap.ondrop = (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            nestWrap.classList.remove('drag-over');
+                            if (this.draggedData) {
+                                const { cond: dCond, parentArray, idx: dIdx } = this.draggedData;
+
+                                // Prevent dragging a condition into its own children
+                                if (this.isRecursiveChild(dCond, cond)) {
+                                    this.setStatus('Cannot move a parent condition into its own children.', true);
+                                    return;
+                                }
+
+                                parentArray.splice(dIdx, 1);
+                                cond.Conditions.push(dCond);
+                                this.draggedData = null;
+                                this.openEditor(this.currentPath);
+                                this.markModified();
+                            }
+                        };
+
+                        nestWrap.querySelector('.btn-add-sub').onclick = (e) => {
+                            e.stopPropagation();
+                            this.showAddConditionModal(cond.Conditions);
+                        };
+
+                        nestWrap.querySelector('.btn-paste-sub').onclick = (e) => {
+                            e.stopPropagation();
+                            if (!this.conditionClipboard) {
+                                this.setStatus('Clipboard is empty.', true);
+                                return;
+                            }
+
+                            // Safety: Cannot paste a condition into its own children (if it's a pointer to the same object)
+                            // Since clipboard is a deep copy, we only need to worry if we were pasting references,
+                            // but for consistency with move, let's just make sure we aren't doing something weird.
+                            // Actually, deep copy makes it "safe" from cycles, but we still want to avoid logic errors.
+
+                            cond.Conditions.push(JSON.parse(JSON.stringify(this.conditionClipboard)));
+                            this.markModified();
+                            this.openEditor(this.currentPath);
+                            this.setStatus('Condition Pasted into group', false);
+                        };
+                        this.renderConditions(cond.Conditions, nestList);
+                        body.appendChild(nestWrap);
+                    }
+
+                    card.appendChild(body);
+
+                    // Drag & Drop
+                    card.ondragstart = (e) => this.handleDragStart(e, cond, conditions, idx);
+                    card.ondragover = (e) => this.handleDragOver(e, card);
+                    card.ondragleave = () => card.classList.remove('drag-over-top', 'drag-over-bottom');
+                    card.ondrop = (e) => this.handleDrop(e, conditions, idx);
+
+                    card.querySelector('.btn-negate').onclick = (e) => {
+                        e.stopPropagation();
+                        cond.negated = !cond.negated;
+                        this.openEditor(this.currentPath);
+                        this.markModified();
+                    };
+                    card.querySelector('.btn-del').onclick = (e) => {
+                        e.stopPropagation();
+                        conditions.splice(idx, 1);
+                        this.openEditor(this.currentPath);
+                        this.markModified();
+                    };
+                    container.appendChild(card);
+                });
+            }
+
+            generateConditionSummary(cond) {
+                if (cond.condition === 'AND' || cond.condition === 'OR' || cond.condition === 'XOR') {
+                    const count = (cond.Conditions || []).length;
+                    return `(${count} items)`;
+                }
+
+                const parts = [];
+                const extractFields = (obj) => {
+                    for (const key in obj) {
+                        const val = obj[key];
+                        if (typeof val === 'object' && val !== null) {
+                            extractFields(val);
+                        } else if (key === 'editorID' || key === 'pluginName') {
+                            if (val) parts.push(val);
+                        } else if (key === 'Left hand') {
+                            if (val) parts.push('LH');
+                        } else if (['value', 'Type', 'Numeric value', 'Comparison', 'Value', 'Value A', 'Value B', 'Sensor'].includes(key)) {
+                            if (typeof val === 'number') parts.push(val);
+                            else if (typeof val === 'boolean') parts.push(val ? 'ON' : 'OFF');
+                            else if (val) parts.push(val);
+                        }
+                    }
+                };
+
+                extractFields(cond);
+                return parts.slice(0, 3).join(' | ');
+            }
+
+            handleDragStart(e, cond, parentArray, idx) {
+                this.draggedData = { cond, parentArray, idx };
+                this.draggedElement = e.target;
+                e.target.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+            }
+
+            handleDragOver(e, card) {
+                e.preventDefault();
+                const rect = card.getBoundingClientRect();
+                const relY = e.clientY - rect.top;
+                card.classList.remove('drag-over-top', 'drag-over-bottom');
+                if (relY < rect.height / 2) card.classList.add('drag-over-top');
+                else card.classList.add('drag-over-bottom');
+            }
+
+            handleDrop(e, targetArray, targetIdx) {
+                e.preventDefault();
+                e.stopPropagation();
+                const card = e.currentTarget;
+                const rect = card.getBoundingClientRect();
+                const relY = e.clientY - rect.top;
+                const isTop = relY < rect.height / 2;
+
+                card.classList.remove('drag-over-top', 'drag-over-bottom', 'dragging');
+                if (this.draggedElement) this.draggedElement.classList.remove('dragging');
+
+                if (this.draggedData) {
+                    const { cond, parentArray, idx } = this.draggedData;
+
+                    if (cond === targetArray[targetIdx]) return;
+
+                    // Remove from old
+                    parentArray.splice(idx, 1);
+
+                    // Correct index if same-array move
+                    const insertIdx = (parentArray === targetArray && idx < targetIdx) ? targetIdx - 1 : targetIdx;
+                    const insertCond = JSON.parse(JSON.stringify(cond));
+                    targetArray.splice(insertIdx, 0, insertCond);
+
+                    this.draggedData = null;
+                    this.openEditor(this.currentPath);
+                    this.markModified();
+                }
+            }
+
+            isRecursiveChild(parent, target) {
+                if (parent === target) return true;
+                if (parent.Conditions) {
+                    return parent.Conditions.some(c => this.isRecursiveChild(c, target));
+                }
+                return false;
+            }
+
+            buildSchemaUI(container, data, summaryEl = null) {
+                const refreshSummary = () => {
+                    if (summaryEl) {
+                        summaryEl.textContent = this.generateConditionSummary(data);
+                    }
+                };
+
+                for (const [key, val] of Object.entries(data)) {
+                    if (key.startsWith('_') || ["condition", "requiredVersion", "negated"].includes(key)) continue;
+                    const row = document.createElement('div');
+                    row.className = 'property-row';
+                    row.innerHTML = `<div class="property-label">${key}</div>`;
+
+                    const valGroup = document.createElement('div');
+                    valGroup.className = 'property-value-group';
+
+                    if (typeof val === 'object' && val !== null && !Array.isArray(val)) {
+                        for (const [sk, sv] of Object.entries(val)) {
+                            const field = document.createElement('div');
+                            field.className = 'nested-field';
+                            field.innerHTML = `<span>${sk.toUpperCase()}</span>`;
+
+                            let input;
+                            if (sk === 'Comparison' || sk.toLowerCase().includes('operator')) {
+                                input = document.createElement('select');
+                                Object.entries(COMP_OPS).forEach(([id, op]) => {
+                                    const opt = document.createElement('option');
+                                    opt.value = id; opt.textContent = op; opt.selected = sv == id;
+                                    input.appendChild(opt);
+                                });
+                            } else if (typeof sv === 'boolean') {
+                                input = document.createElement('input');
+                                input.type = 'checkbox';
+                                input.checked = sv;
+                                input.style.width = '18px';
+                            } else if (typeof sv === 'number') {
+                                input = document.createElement('input');
+                                input.type = 'number';
+                                input.value = sv;
+                            } else {
+                                input = document.createElement('input');
+                                input.type = 'text';
+                                input.value = sv || '';
+                            }
+
+                            input.oninput = () => {
+                                if (input.type === 'checkbox') {
+                                    val[sk] = input.checked;
+                                } else if (input.type === 'number') {
+                                    val[sk] = parseFloat(input.value);
+                                } else if (input.tagName === 'SELECT') {
+                                    val[sk] = parseInt(input.value);
+                                } else {
+                                    val[sk] = input.value;
+                                }
+                                this.markModified();
+                                refreshSummary();
+                            };
+                            field.appendChild(input);
+                            valGroup.appendChild(field);
+                        }
+                    } else if (Array.isArray(val)) {
+                        valGroup.innerHTML = `<div style="font-size:0.8rem;color:var(--accent-color)">Nested ${val.length} items</div>`;
+                    } else {
+                        const input = document.createElement('input');
+                        if (typeof val === 'boolean') {
+                            input.type = 'checkbox'; input.checked = val; input.style.width = '18px';
+                            input.onchange = () => {
+                                data[key] = input.checked;
+                                this.markModified();
+                                refreshSummary();
+                            };
+                        } else if (typeof val === 'number') {
+                            input.type = 'number'; input.value = val;
+                            input.oninput = () => {
+                                data[key] = parseFloat(input.value);
+                                this.markModified();
+                                refreshSummary();
+                            };
+                        } else {
+                            input.type = 'text'; input.value = val || '';
+                            input.oninput = () => {
+                                data[key] = input.value;
+                                this.markModified();
+                                refreshSummary();
+                            };
+                        }
+                        valGroup.appendChild(input);
+                    }
+                    row.appendChild(valGroup);
+                    container.appendChild(row);
+                }
+            }
+
+            toggleRawEditor() {
+                const uiContent = document.getElementById('ui-editor-content');
+                const rawContent = document.getElementById('raw-editor-content');
+                const rawActions = document.getElementById('raw-actions');
+                const btnToggle = document.getElementById('btn-toggle-raw');
+                const textarea = document.getElementById('raw-json-textarea');
+
+                const isRaw = rawContent.classList.contains('hidden');
+
+                if (isRaw) {
+                    const config = this.configs.get(this.currentPath);
+                    if (!config) return;
+
+                    // Clean for display
+                    const cleanData = JSON.parse(JSON.stringify(config.data));
+                    const removeMeta = (obj) => {
+                        for (const k in obj) {
+                            if (k.startsWith('_')) delete obj[k];
+                            else if (typeof obj[k] === 'object' && obj[k] !== null) removeMeta(obj[k]);
+                        }
+                    };
+                    removeMeta(cleanData);
+
+                    textarea.value = JSON.stringify(cleanData, null, 4);
+                    uiContent.classList.add('hidden');
+                    rawContent.classList.remove('hidden');
+                    rawActions.classList.remove('hidden');
+                    btnToggle.innerHTML = `Back to UI Editor`;
+
+                    this.syncEditor(); // Initial sync
+
+                    // Setup events
+                    textarea.oninput = () => this.syncEditor();
+                    textarea.onscroll = () => {
+                        const display = document.getElementById('highlight-display');
+                        const lines = document.getElementById('line-numbers');
+                        display.scrollTop = textarea.scrollTop;
+                        display.scrollLeft = textarea.scrollLeft;
+                        lines.scrollTop = textarea.scrollTop;
+                    };
+                } else {
+                    uiContent.classList.remove('hidden');
+                    rawContent.classList.add('hidden');
+                    rawActions.classList.add('hidden');
+                    btnToggle.innerHTML = `Edit Raw JSON`;
+                }
+            }
+
+            syncEditor() {
+                const textarea = document.getElementById('raw-json-textarea');
+                const display = document.getElementById('highlight-display');
+                const lineCol = document.getElementById('line-numbers');
+
+                const code = textarea.value;
+
+                // 1. Highlight
+                display.innerHTML = this.highlightJSON(code);
+
+                // 2. Line Numbers
+                const lines = code.split('\n').length;
+                let lineHtml = '';
+                for (let i = 1; i <= lines; i++) {
+                    lineHtml += `<div>${i}</div>`;
+                }
+                lineCol.innerHTML = lineHtml;
+            }
+
+            highlightJSON(json) {
+                // Professional JSON Syntax Highlighting using Regex
+                return json
+                    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') // Escape HTML
+                    .replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, (match) => {
+                        let cls = 'token-number';
+                        if (/^"/.test(match)) {
+                            if (/:$/.test(match)) {
+                                cls = 'token-key';
+                            } else {
+                                cls = 'token-string';
+                            }
+                        } else if (/true|false/.test(match)) {
+                            cls = 'token-boolean';
+                        } else if (/null/.test(match)) {
+                            cls = 'token-null';
+                        }
+                        return `<span class="${cls}">${match}</span>`;
+                    })
+                    .replace(/([\[\]\{\},])/g, '<span class="token-bracket">$1</span>');
+            }
+
+            applyRawChanges() {
+                if (!this.currentPath) return;
+                const config = this.configs.get(this.currentPath);
+                const textarea = document.getElementById('raw-json-textarea');
+                try {
+                    const newData = JSON.parse(textarea.value);
+                    config.data = newData;
+                    this.markModified();
+                    this.openEditor(this.currentPath);
+                    this.toggleRawEditor(); // Switch back to UI
+                    this.setStatus('Raw JSON applied successfully!', false);
+                } catch (err) {
+                    this.setStatus('Invalid JSON: ' + err.message, true);
+                }
+            }
+
+            pasteCondition(targetArray) {
+                if (!this.conditionClipboard) {
+                    this.setStatus('Clipboard is empty!', true);
+                    return;
+                }
+                if (!targetArray) return;
+                const newCond = JSON.parse(JSON.stringify(this.conditionClipboard));
+                targetArray.push(newCond);
+                this.openEditor(this.currentPath);
+                this.markModified();
+                this.setStatus('Condition Pasted', false);
+            }
+
+            async handleCreateNewConfig() {
+                if (!this.rootHandle) return;
+
+                const priority = document.getElementById('new-cfg-priority').value;
+                const name = document.getElementById('new-cfg-name').value.trim();
+
+                if (!name) {
+                    alert("Please enter a name for the animation.");
+                    return;
+                }
+
+                const folderName = `${priority}_${name}`;
+                try {
+                    // Find the Mod Root (where config.json with metadata is located)
+                    let targetHandle = await this.findModRootHandleRecursive(this.rootHandle);
+
+                    if (!targetHandle) {
+                        this.setStatus('Main mod config.json not found in current scope.', true);
+                        return;
+                    }
+
+                    // Check if folder already exists
+                    try {
+                        await targetHandle.getDirectoryHandle(folderName);
+                        alert(`A folder named '${folderName}' already exists. Please use a different name or priority.`);
+                        return;
+                    } catch (e) {
+                        // Folder doesn't exist, proceed
+                    }
+
+                    const newFolderHandle = await targetHandle.getDirectoryHandle(folderName, { create: true });
+                    const fileHandle = await newFolderHandle.getFileHandle('config.json', { create: true });
+
+                    const defaultData = {
+                        "name": name,
+                        "priority": parseInt(priority),
+                        "description": "",
+                        "conditions": []
+                    };
+
+                    const writable = await fileHandle.createWritable();
+                    await writable.write(JSON.stringify(defaultData, null, 2));
+                    await writable.close();
+
+                    this.configs.clear();
+                    await this.scanDirectoryNative(this.rootHandle, '');
+                    this.renderTree();
+                    this.closeModal();
+                    this.setStatus(`New Config created in ${targetHandle.name}: ${folderName}`, false);
+                } catch (err) {
+                    console.error(err);
+                    this.setStatus('Failed to create config: ' + err.message, true);
+                }
+            }
+
+            async findModRootHandleRecursive(handle) {
+                if (handle.kind !== 'directory') return null;
+
+                // Check if this folder contains the main mod config.json
+                try {
+                    const fileHandle = await handle.getFileHandle('config.json');
+                    const file = await fileHandle.getFile();
+                    const data = JSON.parse(await file.text());
+                    // Main mod config usually has 'author' or lacks 'priority/conditions'
+                    // We check if it has 'name' and NOT 'conditions' or 'priority' to distinguish from sub-configs
+                    if (data.name && data.conditions === undefined && data.priority === undefined) {
+                        return handle;
+                    }
+                    // Fallback: if it has author/description, it's definitely a root
+                    if (data.author !== undefined || data.description !== undefined) {
+                        if (data.conditions === undefined) return handle;
+                    }
+                } catch (e) { }
+
+                // Deep search
+                for await (const entry of handle.values()) {
+                    if (entry.kind === 'directory') {
+                        const found = await this.findModRootHandleRecursive(entry);
+                        if (found) return found;
+                    }
+                }
+                return null;
+            }
+
+            async findOARHandleRecursive(handle) {
+                if (handle.kind !== 'directory') return null;
+                if (handle.name.toLowerCase() === 'openanimationreplacer') return handle;
+
+                // Priority paths for speed
+                const commonPaths = ['meshes/actors/character/animations/OpenAnimationReplacer', 'OpenAnimationReplacer'];
+
+                // First, check immediate children
+                for await (const entry of handle.values()) {
+                    if (entry.kind === 'directory' && entry.name.toLowerCase() === 'openanimationreplacer') {
+                        return entry;
+                    }
+                }
+
+                // If not found, try common deep paths if we can traverse them
+                // Note: DirectoryPicker doesn't easily support path-based access without handle propagation
+                // So we do a shallow breadth-first or depth-first search
+                for await (const entry of handle.values()) {
+                    if (entry.kind === 'directory') {
+                        // Deep search (limited to avoid huge trees if user opened C:\)
+                        const found = await this.findOARHandleRecursive(entry);
+                        if (found) return found;
+                    }
+                }
+                return null;
+            }
+
+            showNewConfigModal() {
+                if (!this.isSecureContext || !this.rootHandle) {
+                    this.setStatus('New Config requires Native Directory Access & an open folder.', true);
+                    return;
+                }
+                document.getElementById('modal-new-config').classList.remove('oar-modal-hidden');
+            }
+
+            async handleCreateMod() {
+                const modName = document.getElementById('new-mod-name').value.trim();
+                const author = document.getElementById('new-mod-author').value.trim();
+                const description = document.getElementById('new-mod-desc').value.trim();
+
+                if (!modName) {
+                    alert("Please enter a mod name.");
+                    return;
+                }
+
+                try {
+                    // This call MUST be direct consequence of button click to maintain "user gesture"
+                    const baseHandle = await window.showDirectoryPicker({
+                        mode: 'readwrite'
+                    });
+
+                    this.closeModal(); // Close after picker success
+                    this.setStatus('Creating folder structure...', false);
+
+                    // Structure: ModName\meshes\actors\character\animations\OpenAnimationReplacer\ModName
+                    const modFolder = await baseHandle.getDirectoryHandle(modName, { create: true });
+                    const meshes = await modFolder.getDirectoryHandle('meshes', { create: true });
+                    const actors = await meshes.getDirectoryHandle('actors', { create: true });
+                    const character = await actors.getDirectoryHandle('character', { create: true });
+                    const animations = await character.getDirectoryHandle('animations', { create: true });
+                    const oar = await animations.getDirectoryHandle('OpenAnimationReplacer', { create: true });
+                    const finalFolder = await oar.getDirectoryHandle(modName, { create: true });
+
+                    const fileHandle = await finalFolder.getFileHandle('config.json', { create: true });
+                    const initialData = {
+                        "name": modName,
+                        "author": author || "",
+                        "description": description || ""
+                    };
+
+                    const writable = await fileHandle.createWritable();
+                    await writable.write(JSON.stringify(initialData, null, 4));
+                    await writable.close();
+
+                    // Refresh hierarchy to show ONLY the new mod
+                    this.rootHandle = modFolder;
+                    this.configs.clear();
+                    await this.scanDirectoryNative(modFolder, '');
+                    this.renderTree();
+
+                    // Find the config in the map using its relative path from modFolder
+                    let foundPath = null;
+                    const searchPart = `config.json`.toLowerCase(); // It's just modName/.../config.json now
+                    for (const path of this.configs.keys()) {
+                        if (path.toLowerCase().endsWith(searchPart)) {
+                            foundPath = path;
+                            break;
+                        }
+                    }
+
+                    if (foundPath) {
+                        this.openEditor(foundPath);
+                    }
+
+                    this.setStatus(`Mod '${modName}' created and loaded!`, false);
+                } catch (err) {
+                    console.error(err);
+                    this.setStatus('Failed to create mod: ' + err.message, true);
+                }
+            }
+
+            showCreateModModal() {
+                if (!this.isSecureContext) {
+                    this.setStatus('Create Mod requires Native Directory Access.', true);
+                    return;
+                }
+                document.getElementById('modal-create-mod').classList.remove('oar-modal-hidden');
+            }
+
+            markModified() {
+                const config = this.configs.get(this.currentPath);
+                if (config) {
+                    config.modified = true;
+                    document.getElementById('btn-save-base').disabled = false;
+                    document.getElementById('btn-save-user').disabled = false;
+                    this.setStatus('Unsaved Changes', true);
+                }
+            }
+
+            async handleSave() {
+                this.setStatus('Saving Base Config...');
+                for (const [path, config] of this.configs.entries()) {
+                    if (config.modified) {
+                        const json = JSON.stringify(config.data, (key, value) => key.startsWith('_') ? undefined : value, 2);
+                        if (this.isSecureContext) {
+                            try {
+                                const writable = await config.handle.createWritable();
+                                await writable.write(json);
+                                await writable.close();
+                                config.modified = false;
+                                this.setStatus('Base Config Saved: ' + path, false);
+                            } catch (err) {
+                                console.error(err);
+                                this.setStatus('Overwrite Failed. Permissions?', true);
+                            }
+                        } else {
+                            // Fallback download
+                            const blob = new Blob([json], { type: "application/json" });
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            const fileName = path.split('/').pop();
+                            a.download = fileName;
+                            a.click();
+                            config.modified = false;
+                        }
+                    }
+                }
+                document.getElementById('btn-save-base').disabled = true;
+                document.getElementById('btn-save-user').disabled = true;
+                this.renderTree();
+            }
+
+            async handleSaveUserConfig() {
+                if (!this.currentPath) return;
+                const config = this.configs.get(this.currentPath);
+                if (!config) return;
+
+                this.setStatus('Saving User Override...');
+                const json = JSON.stringify(config.data, (key, value) => key.startsWith('_') ? undefined : value, 2);
+
+                if (this.isSecureContext && config.parentHandle) {
+                    try {
+                        const userFileHandle = await config.parentHandle.getFileHandle('user.json', { create: true });
+                        const writable = await userFileHandle.createWritable();
+                        await writable.write(json);
+                        await writable.close();
+
+                        // Add to our list and refresh
+                        const basePath = this.currentPath.substring(0, this.currentPath.lastIndexOf('/'));
+                        const userPath = `${basePath}/user.json`;
+
+                        this.configs.set(userPath, {
+                            handle: userFileHandle,
+                            parentHandle: config.parentHandle,
+                            isUser: true,
+                            data: JSON.parse(json),
+                            modified: false,
+                            path: userPath
+                        });
+
+                        config.modified = false;
+                        this.currentPath = userPath;
+                        this.renderTree();
+                        this.openEditor(userPath);
+                        this.setStatus('user.json Saved Successfully!', false);
+                    } catch (err) {
+                        console.error(err);
+                        this.setStatus('Failed to save user.json', true);
+                    }
+                } else {
+                    // Fallback download
+                    const blob = new Blob([json], { type: "application/json" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'user.json';
+                    a.click();
+                    this.setStatus('Downloaded user.json', false);
+                }
+                document.getElementById('btn-save-base').disabled = true;
+                document.getElementById('btn-save-user').disabled = true;
+            }
+
+            showAddConditionModal(targetArray = null) {
+                if (!this.currentPath) {
+                    this.setStatus('Please select an animation set first.', true);
+                    return;
+                }
+                this.activeConditionsTarget = targetArray;
+                document.getElementById('modal-container').classList.remove('oar-modal-hidden');
+            }
+
+            closeModal() {
+                this.activeConditionsTarget = null;
+                document.querySelectorAll('.modal-overlay').forEach(el => el.classList.add('oar-modal-hidden'));
+            }
+        }
+
+        window.editor = new OAREditor();
+    </script>
+</body>
+
+</html>
