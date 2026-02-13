@@ -5,7 +5,7 @@ You can easily modify conditions without launching the game, just like using the
 
 ---
 
-## 💻 System Requirements
+## System Requirements
 
 - **OS**: Windows 10 or 11 (64-bit)
 - **Runtime**: [.NET 9.0 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/9.0) (Required)
@@ -13,7 +13,7 @@ You can easily modify conditions without launching the game, just like using the
 
 ---
 
-## ⚠️ Important Disclaimer & Testing Status
+## Important Disclaimer & Testing Status
 
 **Please note that this tool has not undergone extensive testing for complex condition configurations or deep edge cases.**
 I have primarily tested the features I frequently use, so unforeseen issues may occur. 
@@ -62,6 +62,14 @@ If you encounter any problems, please report them, and I will do my best to addr
 - This tool requires a **secure environment (HTTPS or localhost)** for all features to function.
 - Selecting a system folder (like the entire C drive) may slow down scanning. Please select the specific mod folder.
 - Always check if the "Unsaved Changes" message is visible in the status bar before finishing to ensure nothing is lost.
+
+---
+
+---
+
+## Credits & References
+
+- **Open Animation Replacer (OAR)**: This tool is based on the logic and structure of the original [Open Animation Replacer](https://github.com/ersh1/OpenAnimationReplacer) developed by **Ersh**. All credits for the OAR framework go to them.
 
 ---
 

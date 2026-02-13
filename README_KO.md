@@ -5,7 +5,7 @@
 
 ---
 
-## 💻 요구 사항 (System Requirements)
+## 요구 사항 (System Requirements)
 
 - **운영체제**: Windows 10 또는 11 (64비트)
 - **런타임**: [.NET 9.0 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/9.0) (실행을 위해 필수 설치 필요)
@@ -22,7 +22,7 @@
 
 ---
 
-## ⚠️ 주의 사항 및 테스트 현황
+## 주의 사항 및 테스트 현황
 
 **이 툴은 복잡한 컨디션을 구성하거나 심도 깊은 테스트는 진행하지 않았습니다.**
 제가 자주 사용하는 기능들만 테스트해봤기 때문에 혹시나 문제가 생길 수도 있습니다.
@@ -62,6 +62,14 @@
 - 이 툴은 모든 기능이 정상 작동하기 위해 **보안이 강화된 환경(HTTPS 또는 localhost)**이 필요합니다.
 - 시스템 폴더(C 드라이브 전체 등)를 선택하면 스캔 속도가 매우 느려질 수 있습니다. 반드시 해당 모드 폴더를 선택해 주세요.
 - 작업을 마치기 전 항상 상태 바에 "Unsaved Changes" 메시지가 떠 있는지 확인하여 데이터 유실을 방지하세요.
+
+---
+
+---
+
+## 크레딧 및 참조 (Credits & References)
+
+- **Open Animation Replacer (OAR)**: 이 툴은 **Ersh**님이 개발한 원본 [Open Animation Replacer](https://github.com/ersh1/OpenAnimationReplacer)의 로직과 구조를 참조하여 제작되었습니다. OAR 프레임워크에 대한 모든 권한은 원작자에게 있습니다.
 
 ---
 
