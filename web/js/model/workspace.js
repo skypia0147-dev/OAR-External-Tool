@@ -70,6 +70,8 @@ export class Submod {
   }
 
   get name() { return this.doc.name ?? this.configDoc?.name ?? this.folder; }
+  /** user.json that OAR saved in game into MO2's overwrite folder for this submod (wins in game), or null. */
+  get overwriteUser() { return this.mod.ws.overwriteFor(this.mod, this.path); }
   get priority() { return typeof this.doc.priority === 'number' ? this.doc.priority : 0; }
   get disabled() { return !!this.doc.disabled; }
   get source() { return this.userDoc ? 'user' : 'config'; }
@@ -182,6 +184,14 @@ export class ReplacerMod {
 
   get name() { return this.doc.name || this.folder; }
   get author() { return this.doc.author ?? ''; }
+  /**
+   * What MO2's selected profile does with this mod: 'on', 'off' (unticked), 'missing' (not in modlist.txt yet),
+   * 'hidden' (same OAR folder in a mod with higher MO2 priority), or null when there is no MO2 profile to go by.
+   */
+  get mo2() { return this.ws.mo2States?.get(this) ?? null; }
+  /** Whether OAR would load this mod in game (always true without MO2 information). */
+  get loaded() { const s = this.mo2; return s === null || s === 'on'; }
+  get mo2HiddenBy() { return this.ws.mo2HiddenBy?.get(this) ?? null; }
   get ownDirty() { return stringify(this.doc) !== this.baseline; }
   get dirty() { return this.ownDirty || this.submods.some((s) => s.dirty); }
   get legacy() { return false; }
@@ -205,16 +215,82 @@ export class ReplacerMod {
 
 export class Workspace {
   /** @param {any} scan host scan result  @param {Schema} schema */
-  constructor(scan, mo2, schema) {
+  constructor(scan, mo2, schema, overwrite = []) {
     this.root = scan.root;
     this.mo2 = mo2 ?? null;
     this.schema = schema;
     this.errors = scan.errors ?? [];
     this.legacy = scan.legacy ?? [];
     this.mods = scan.mods.map((m) => new ReplacerMod(this, m));
+    // MO2 profile: which mods are ticked. Only meaningful when the opened folder is the instance's mods folder (or inside it).
+    this.mo2Usable = !!this.mo2 && isUnder(this.root, this.mo2.modsDir);
+    this.mo2Profile = null;
+    this.mo2Order = null; // lower-case mod name -> { on, rank } (rank 0 = highest MO2 priority)
+    this.mo2States = null;
+    this.mo2HiddenBy = null;
+    // user.json files OAR saved in game into MO2's overwrite folder, by path inside the mod (lower case)
+    this.overwrite = new Map();
+    if (this.mo2Usable) {
+      const base = this.mo2.overwriteDir;
+      const add = (dir, text) => this.overwrite.set(relOf(base, dir), {
+        path: `${dir}\\user.json`, text, shown: `Overwrite\\${dir.slice(base.replace(/\\+$/, '').length + 1)}\\user.json`,
+      });
+      for (const m of overwrite) {
+        if (m.user != null) add(m.path, m.user);
+        for (const s of m.submods ?? []) if (s.user != null) add(s.path, s.user);
+      }
+    }
   }
 
   get dirty() { return this.mods.some((m) => m.dirty); }
+
+  /** Applies a profile's modlist.txt ([{ name, on }], highest priority first); null turns MO2 information off. */
+  setMo2Profile(profile, list) {
+    this.mo2Profile = list ? profile : null;
+    this.mo2Order = list ? new Map(list.map((e, i) => [e.name.toLowerCase(), { on: e.on, rank: i }])) : null;
+    this.computeMo2();
+  }
+
+  /** How many opened mods OAR would load with another profile's list (same rules as the sidebar count). */
+  loadedCountWith(list) {
+    const saved = [this.mo2Profile, this.mo2Order, this.mo2States, this.mo2HiddenBy];
+    this.setMo2Profile('?', list);
+    const n = this.mods.filter((m) => m.loaded).length;
+    [this.mo2Profile, this.mo2Order, this.mo2States, this.mo2HiddenBy] = saved;
+    return n;
+  }
+
+  computeMo2() {
+    if (!this.mo2Order) { this.mo2States = null; this.mo2HiddenBy = null; return; }
+    const states = new Map();
+    const hiddenBy = new Map();
+    const byFolder = new Map();
+    for (const m of this.mods) {
+      if (!m.managerMod) continue;
+      const e = this.mo2Order.get(m.managerMod.toLowerCase());
+      states.set(m, !e ? 'missing' : e.on ? 'on' : 'off');
+      if (e?.on) {
+        // Two ticked MO2 mods with the same OAR folder: MO2's virtual Data folder shows only the higher one.
+        const key = `${m.prefix}\\${m.folder}`.toLowerCase();
+        if (!byFolder.has(key)) byFolder.set(key, []);
+        byFolder.get(key).push({ m, rank: e.rank });
+      }
+    }
+    for (const group of byFolder.values()) {
+      if (group.length < 2) continue;
+      group.sort((a, b) => a.rank - b.rank);
+      for (const { m } of group.slice(1)) { states.set(m, 'hidden'); hiddenBy.set(m, group[0].m); }
+    }
+    this.mo2States = states;
+    this.mo2HiddenBy = hiddenBy;
+  }
+
+  /** In-game OAR save in MO2's overwrite folder that shadows this mod/submod folder, or null. */
+  overwriteFor(mod, path) {
+    if (!this.overwrite.size || !mod.managerMod || !mod.loaded) return null;
+    const rel = relOf(`${this.mo2.modsDir}\\${mod.managerMod}`, path);
+    return rel ? this.overwrite.get(rel) ?? null : null;
+  }
 
   allSubmods() { return this.mods.flatMap((m) => m.submods); }
 
@@ -222,12 +298,15 @@ export class Workspace {
 
   findMod(id) { return this.mods.find((m) => m.id === id) ?? null; }
 
-  /** Submods (any mod, any folder layout) that replace this original, highest priority first. */
-  replacersOf(anim, project = 'character') {
+  /**
+   * Submods (any mod, any folder layout) that replace this original, highest priority first.
+   * Mods MO2 doesn't load are left out unless `all` is set.
+   */
+  replacersOf(anim, project = 'character', { all = false } = {}) {
     const t = anim.toLowerCase();
     const p = project.toLowerCase();
     return this.allSubmods()
-      .filter((s) => s.originals().some((o) => o.project === p && o.anim.toLowerCase() === t))
+      .filter((s) => (all || s.mod.loaded) && s.originals().some((o) => o.project === p && o.anim.toLowerCase() === t))
       .sort((a, b) => b.priority - a.priority);
   }
 
@@ -236,16 +315,25 @@ export class Workspace {
     const counts = new Map();
     const p = project.toLowerCase();
     for (const s of this.allSubmods()) {
+      if (!s.mod.loaded) continue;
       for (const o of new Set(s.originals().filter((x) => x.project === p).map((x) => x.anim.toLowerCase()))) counts.set(o, (counts.get(o) ?? 0) + 1);
     }
     return counts;
   }
 
+  /** Problems of the mods OAR would load (MO2-unticked mods are left out). */
   problems() {
     const list = [];
     for (const m of this.mods) {
+      if (!m.loaded) continue;
       for (const p of m.problems) list.push({ ...p, mod: m });
+      const modOverwrite = this.overwriteFor(m, m.path);
+      if (modOverwrite)
+        list.push({ level: 'warn', kind: 'overwrite', mod: m, where: modOverwrite.path, text: 'OAR saved in-game settings for this mod into MO2’s overwrite folder. In game they win over this mod’s files.' });
       for (const s of m.submods) {
+        const ow = s.overwriteUser;
+        if (ow)
+          list.push({ level: 'warn', kind: 'overwrite', mod: m, submod: s, where: ow.path, text: 'OAR saved in-game settings for this submod into MO2’s overwrite folder. In game they win over the user.json and config.json this tool edits.' });
         for (const p of s.problems) list.push({ ...p, mod: m, submod: s });
         const unknown = new Set();
         walkEntries(s.doc, (obj) => {
@@ -257,6 +345,7 @@ export class Workspace {
     }
     // Same priority within one replacer mod: OAR's "conflicting submods".
     for (const m of this.mods) {
+      if (!m.loaded) continue;
       const byPriority = new Map();
       for (const s of m.submods) {
         if (!byPriority.has(s.priority)) byPriority.set(s.priority, []);
@@ -272,6 +361,19 @@ export class Workspace {
     for (const e of this.errors) list.push({ level: 'error', kind: 'io', text: e });
     return list;
   }
+}
+
+function isUnder(path, dir) {
+  const p = path.toLowerCase().replace(/\\+$/, '');
+  const d = dir.toLowerCase().replace(/\\+$/, '');
+  return p === d || p.startsWith(`${d}\\`);
+}
+
+/** Lower-case path of `path` inside `dir`, or null when it isn't inside. */
+function relOf(dir, path) {
+  const d = `${dir.replace(/\\+$/, '')}\\`.toLowerCase();
+  const p = path.toLowerCase();
+  return p.startsWith(d) ? p.slice(d.length) : null;
 }
 
 /** Visit every condition/function object in a submod or preset document. */

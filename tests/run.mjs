@@ -109,4 +109,48 @@ test("OAR's constructor defaults are used for new entries", () => {
   assert.equal(argumentText({ condition: 'Random', 'Numeric value': { value: 0.5 } }, schema), 'random(0–0) < 0.5');
 });
 
+test('MO2 profile: unticked, missing and hidden mods are left out of conflicts and problems', () => {
+  const sub = (mod, name, pri, user = null) => ({
+    path: `M\\${mod}\\meshes\\actors\\character\\animations\\OpenAnimationReplacer\\${name}\\S`, folder: 'S', files: ['mt_idle.hkx'],
+    config: `{"name":"${mod}","priority":${pri},"conditions":[{"condition":"Nope"}]}`, user,
+  });
+  const mod = (managerMod, folder, pri) => ({
+    path: `M\\${managerMod}\\meshes\\actors\\character\\animations\\OpenAnimationReplacer\\${folder}`, folder, managerMod,
+    project: 'character', prefix: 'actors\\character\\animations', config: `{"name":"${managerMod}"}`, submods: [sub(managerMod, folder, pri)],
+  });
+  const mo2 = { modsDir: 'M', overwriteDir: 'O', profilesDir: 'P', profiles: ['Default'], selectedProfile: 'Default' };
+  const overwrite = [{ path: 'O\\meshes\\actors\\character\\animations\\OpenAnimationReplacer\\Base', submods: [{ path: 'O\\meshes\\actors\\character\\animations\\OpenAnimationReplacer\\Base\\S', user: '{}' }] }];
+  const ws = new Workspace({ root: 'M', mods: [mod('Base', 'Base', 1), mod('Off', 'Off', 5), mod('New', 'New', 6), mod('Twin A', 'Twin', 7), mod('Twin B', 'Twin', 8)] }, mo2, schema, overwrite);
+  const [base, off, nw, twinA, twinB] = ws.mods;
+  // before a profile is applied everything counts
+  assert.equal(base.mo2, null);
+  assert.equal(ws.replacersOf('mt_idle.hkx').length, 5);
+  // modlist.txt: highest priority first; Twin A wins over Twin B for the shared OAR folder
+  ws.setMo2Profile('Default', [{ name: 'Twin A', on: true }, { name: 'Twin B', on: true }, { name: 'off', on: false }, { name: 'base', on: true }]);
+  assert.deepEqual([base, off, nw, twinA, twinB].map((m) => m.mo2), ['on', 'off', 'missing', 'on', 'hidden']);
+  assert.equal(twinB.mo2HiddenBy, twinA);
+  // counting another profile doesn't change the current one
+  assert.equal(ws.loadedCountWith([{ name: 'Twin B', on: true }, { name: 'Twin A', on: true }, { name: 'Off', on: true }]), 2);
+  assert.equal(twinB.mo2, 'hidden');
+  assert.equal(ws.mo2Profile, 'Default');
+  assert.deepEqual(ws.replacersOf('mt_idle.hkx').map((s) => s.mod), [twinA, base]);
+  assert.equal(ws.replacersOf('mt_idle.hkx', 'character', { all: true }).length, 5);
+  assert.equal(ws.replacementCounts().get('mt_idle.hkx'), 2);
+  const probMods = new Set(ws.problems().map((p) => p.mod));
+  assert.ok(probMods.has(base) && probMods.has(twinA) && !probMods.has(off) && !probMods.has(nw) && !probMods.has(twinB));
+  // OAR's in-game save in overwrite shadows the Base submod
+  assert.ok(base.submods[0].overwriteUser?.path.endsWith('\\Base\\S\\user.json'));
+  assert.ok(ws.problems().some((p) => p.kind === 'overwrite' && p.submod === base.submods[0]));
+  // ignoring MO2 counts everything again
+  ws.setMo2Profile(null, null);
+  assert.equal(off.loaded, true);
+  assert.equal(ws.replacersOf('mt_idle.hkx').length, 5);
+});
+
+test('MO2 information is only used when the opened folder is the mods folder', () => {
+  const ws = new Workspace({ root: 'X\\other', mods: [] }, { modsDir: 'M', overwriteDir: 'O', profiles: [] }, schema, []);
+  assert.equal(ws.mo2Usable, false);
+  assert.equal(new Workspace({ root: 'M\\Some mod', mods: [] }, { modsDir: 'M\\', overwriteDir: 'O', profiles: [] }, schema, []).mo2Usable, true);
+});
+
 console.log(`${n} tests passed`);

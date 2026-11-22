@@ -62,6 +62,7 @@ internal sealed class Bridge
                 "fs.recycle" => Recycle(Need(p, "path")),
                 "shell.reveal" => Reveal(Need(p, "path")),
                 "mo2.detect" => Mo2.Detect(Need(p, "path")),
+                "mo2.modlist" => new { mods = Mo2.ReadModlist(Need(p, "profilesDir"), Need(p, "profile")) },
                 "game.animations" => new { files = BsaReader.ListAnimations(Need(p, "dataDir"), Str(p, "project") ?? "character") },
                 _ => throw new BridgeException("unknown_method", $"Unknown method {method}"),
             };
@@ -163,7 +164,9 @@ internal sealed class Bridge
         AllowWrite(scan.Root);
         _settings.AddRecent(scan.Root, scan.Mods.Count);
         Mo2Instance? mo2 = Mo2.Detect(scan.Root);
-        return new { scan, mo2 };
+        // OAR's in-game "Save" writes user.json into MO2's overwrite folder; in game those copies win.
+        var overwrite = mo2 is not null && Directory.Exists(mo2.OverwriteDir) ? OarScanner.ScanDataFolder(mo2.OverwriteDir) : new List<OarScanner.ModDto>();
+        return new { scan, mo2, overwrite };
     }
 
     private object? WriteText(string path, string text)

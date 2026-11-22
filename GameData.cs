@@ -3,7 +3,12 @@ using System.Text;
 namespace OarTool;
 
 /// <summary>Mod Organizer 2 instance found above an opened folder.</summary>
-internal sealed record Mo2Instance(string InstanceDir, string ModsDir, string? GamePath, string? DataDir);
+internal sealed record Mo2Instance(
+    string InstanceDir, string ModsDir, string? GamePath, string? DataDir,
+    string ProfilesDir, string OverwriteDir, List<string> Profiles, string? SelectedProfile);
+
+/// <summary>One line of a profile's modlist.txt. The file lists the highest MO2 priority first.</summary>
+internal sealed record Mo2ListEntry(string Name, bool On);
 
 internal static class Mo2
 {
@@ -22,21 +27,56 @@ internal static class Mo2
 
     private static Mo2Instance Parse(string instanceDir, string ini)
     {
-        string? gamePath = null, baseDir = null, modDir = null;
+        string? gamePath = null, baseDir = null, modDir = null, profilesDir = null, overwriteDir = null, selected = null;
         foreach (string raw in File.ReadLines(ini))
         {
             string line = raw.Trim();
-            if (line.StartsWith("gamePath=", StringComparison.OrdinalIgnoreCase))
-                gamePath = Unwrap(line["gamePath=".Length..]);
-            else if (line.StartsWith("base_directory=", StringComparison.OrdinalIgnoreCase))
-                baseDir = Unwrap(line["base_directory=".Length..]);
-            else if (line.StartsWith("mod_directory=", StringComparison.OrdinalIgnoreCase))
-                modDir = Unwrap(line["mod_directory=".Length..]);
+            string? Value(string key) => line.StartsWith(key + "=", StringComparison.OrdinalIgnoreCase) ? Unwrap(line[(key.Length + 1)..]) : null;
+            gamePath ??= Value("gamePath");
+            baseDir ??= Value("base_directory");
+            modDir ??= Value("mod_directory");
+            profilesDir ??= Value("profiles_directory");
+            overwriteDir ??= Value("overwrite_directory");
+            selected ??= Value("selected_profile");
         }
         string bas = string.IsNullOrEmpty(baseDir) ? instanceDir : baseDir;
-        string mods = string.IsNullOrEmpty(modDir) ? Path.Combine(bas, "mods") : modDir.Replace("%BASE_DIR%", bas, StringComparison.OrdinalIgnoreCase);
+        string Dir(string? configured, string fallback) =>
+            Path.GetFullPath(string.IsNullOrEmpty(configured) ? Path.Combine(bas, fallback) : configured.Replace("%BASE_DIR%", bas, StringComparison.OrdinalIgnoreCase));
+        string mods = Dir(modDir, "mods");
+        string profiles = Dir(profilesDir, "profiles");
         string? data = gamePath is null ? null : Path.Combine(gamePath, "Data");
-        return new Mo2Instance(instanceDir, Path.GetFullPath(mods), gamePath, data is not null && Directory.Exists(data) ? data : null);
+        var names = new List<string>();
+        if (Directory.Exists(profiles))
+        {
+            foreach (string d in Directory.EnumerateDirectories(profiles))
+                if (File.Exists(Path.Combine(d, "modlist.txt")))
+                    names.Add(Path.GetFileName(d));
+            names.Sort(StringComparer.OrdinalIgnoreCase);
+        }
+        return new Mo2Instance(instanceDir, mods, gamePath, data is not null && Directory.Exists(data) ? data : null,
+            profiles, Dir(overwriteDir, "overwrite"), names, selected);
+    }
+
+    /// <summary>
+    /// Mods of one profile in modlist.txt order (highest priority first). Separators and the
+    /// unmanaged "*" entries (DLC, Creation Club) are left out — they carry no OAR folders.
+    /// </summary>
+    public static List<Mo2ListEntry> ReadModlist(string profilesDir, string profile)
+    {
+        if (profile.Length == 0 || profile.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0 || profile is "." or "..")
+            throw new ArgumentException($"Bad profile name: {profile}");
+        string file = Path.Combine(profilesDir, profile, "modlist.txt");
+        var list = new List<Mo2ListEntry>();
+        foreach (string raw in File.ReadLines(file))
+        {
+            if (raw.Length < 2 || (raw[0] != '+' && raw[0] != '-'))
+                continue;
+            string name = raw[1..].TrimEnd();
+            if (name.EndsWith("_separator", StringComparison.OrdinalIgnoreCase))
+                continue;
+            list.Add(new Mo2ListEntry(name, raw[0] == '+'));
+        }
+        return list;
     }
 
     // MO2 stores paths as @ByteArray(H:\\Game\\...) with doubled backslashes.

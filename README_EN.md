@@ -37,6 +37,15 @@ No network port is used. (1.x served its page on `localhost:8080` and showed "Th
 
 Lists configs OAR can't read (broken JSON), repeated keys (OAR uses the first), submods in one mod that share a priority and replace the same animation, and conditions from plugins this tool has no editor for (those are kept exactly as they are and can be edited as JSON).
 
+### Mod Organizer 2 profile
+
+When the opened folder is an MO2 `mods` folder, the tool reads the selected profile's `modlist.txt` (read only — it never changes it):
+
+- The box at the top of the sidebar shows the profile and how many OAR mods are on. Click it to switch profile, read MO2 again after changing mods, or ignore MO2.
+- Mods that are unticked are dimmed and tagged **off**; **On / All** filters the list. A mod whose OAR folder is also in a ticked mod with higher MO2 priority is tagged **hidden** (the game only sees that copy).
+- Priority conflicts, the "pick original" counts and Problems count only the mods OAR will load. Off mods can still be edited and saved.
+- OAR's in-game **Save** writes `user.json` into MO2's **Overwrite** folder, and in game that file wins. The tool shows a notice on those mods and submods.
+
 ---
 
 ## Creating a new mod

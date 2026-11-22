@@ -5,6 +5,7 @@ import { renderList } from './tree.js';
 import { FUNCTION_SETS, targetOf, isVariant } from '../model/workspace.js';
 import { stringify } from '../model/json.js';
 import { nameOf } from '../model/schema.js';
+import { mo2Banner, overwriteNotice } from './shell.js';
 
 export function submodList(mod) {
   const q = state.smFilter.trim().toLowerCase();
@@ -61,7 +62,7 @@ function head(sub) {
   walk(sub.doc.conditions);
   for (const p of plugins) chips.push(`<span class="tag custom">Needs: ${esc(p)}</span>`);
   const rel = sub.path.slice(sub.path.toLowerCase().indexOf('\\openanimationreplacer\\') + 1);
-  return `<div class="ed-head">
+  return `${mo2Banner(sub.mod)}${overwriteNotice(sub.overwriteUser, 'submod')}<div class="ed-head">
     <div class="ed-head-text">
       <div class="ed-title"><span class="ell">${esc(sub.name)}</span>${sub.dirty ? '<span class="mk-dirty">*</span>' : ''}</div>
       <button class="ed-path" data-act="reveal" data-path="${esc(sub.path)}" title="Show in Explorer">${esc(rel)}</button>

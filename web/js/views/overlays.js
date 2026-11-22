@@ -26,6 +26,7 @@ function popover() {
   if (p.type === 'menu') {
     return `<div class="popover-backdrop" data-act="closePopover"></div><div class="popover popover-menu" style="${place(p.rect, p.width ?? 260, 400)}"><div class="menu">
       ${p.items.map((it) => it === '-' ? '<div class="menu-sep"></div>'
+        : it.header ? `<div class="menu-label">${esc(it.header)}</div>`
         : `<button class="menu-item ${it.danger ? 'danger' : ''}" data-act="${it.act}" ${Object.entries(it.data ?? {}).map(([k, v]) => `data-${k}="${esc(v)}"`).join(' ')} ${it.disabled ? 'disabled' : ''}>${it.icon ? ic(it.icon, 15) : ''}<span class="grow">${esc(it.label)}</span>${it.hint ? `<span class="menu-hint">${esc(it.hint)}</span>` : ''}</button>`).join('')}
     </div></div>`;
   }

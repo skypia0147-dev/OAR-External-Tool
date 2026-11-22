@@ -65,6 +65,15 @@ internal static class OarScanner
         return new ScanDto(root, mods, legacy, errors);
     }
 
+    /// <summary>OAR mods inside one Data-like folder (used for MO2's overwrite folder). Read errors are ignored.</summary>
+    public static List<ModDto> ScanDataFolder(string dataLike)
+    {
+        var mods = new List<ModDto>();
+        if (HasMeshes(dataLike))
+            ReadDataLike(dataLike, null, mods, new List<LegacyDto>(), new List<string>());
+        return mods;
+    }
+
     private static bool HasMeshes(string dir) => Directory.Exists(Path.Combine(dir, "meshes"));
 
     private static string? ManagerModOf(string dataLike)

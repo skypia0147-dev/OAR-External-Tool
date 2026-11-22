@@ -15,6 +15,8 @@ export const state = {
   jsonDraft: null,
   panel: true,
   smFilter: '',
+  mo2Filter: 'all', // sidebar: 'on' = only mods ticked in the MO2 profile
+
   popover: null,
   dialog: null,
   palette: null,

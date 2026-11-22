@@ -3,6 +3,7 @@ import { esc, ic, plural, ago } from '../core.js';
 import { state, canEdit } from '../state.js';
 import { renderList } from './tree.js';
 import { setupCard } from './submod.js';
+import { mo2Banner, overwriteNotice } from './shell.js';
 
 export function modPage(mod) {
   const ed = canEdit('modInfo');
@@ -23,10 +24,11 @@ export function modPage(mod) {
   const rel = mod.path.slice(Math.max(0, mod.path.toLowerCase().indexOf('\\meshes\\') + 1));
   return `<div class="mod-page"><div class="ed-col" style="max-width:1000px">
     ${setupCard(mod)}
+    ${mo2Banner(mod)}${overwriteNotice(state.ws.overwriteFor(mod, mod.path), 'mod')}
     <div class="ed-head"><div class="ed-head-text">
       <div class="ed-title">${esc(mod.name)}${mod.dirty ? ' <span class="mk-dirty">*</span>' : ''}</div>
       <button class="ed-path" data-act="reveal" data-path="${esc(mod.path)}" title="Show in Explorer">${esc(mod.managerMod ? `${mod.managerMod}\\${rel}` : rel)}</button>
-      <div class="ed-chips">${mod.author ? `<span class="tag">by ${esc(mod.author)}</span>` : ''}<span class="tag">${plural(mod.submods.length, 'submod')}</span>${mod.project !== 'character' ? `<span class="tag mono">${esc(mod.project)}</span>` : ''}${mod.userDoc ? '<span class="tag user">user.json</span>' : ''}</div>
+      <div class="ed-chips">${mod.mo2 && mod.mo2 !== 'on' ? `<span class="tag mo2-chip">${mod.mo2 === 'hidden' ? 'Hidden in MO2' : mod.mo2 === 'missing' ? 'Not in MO2 yet' : 'Off in MO2'}</span>` : ''}${mod.author ? `<span class="tag">by ${esc(mod.author)}</span>` : ''}<span class="tag">${plural(mod.submods.length, 'submod')}</span>${mod.project && mod.project !== 'character' ? `<span class="tag mono">${esc(mod.project)}</span>` : ''}${mod.userDoc ? '<span class="tag user">user.json</span>' : ''}</div>
     </div><div class="ed-head-actions">${canEdit('settings') ? `<button class="btn ${mod.submods.length ? 'btn-secondary' : 'btn-primary'}" data-act="newSubmod">${ic('plus', 14)}New submod</button>` : ''}</div></div>
     <section class="sec ${state.sec.info ? 'open' : ''}"><div class="sec-head" data-act="toggleSec" data-sec="info"><span class="chev">${ic('chevronRight', 15)}</span><span class="sec-title">Mod info</span><span class="sec-summary"></span></div><div class="sec-body">
       ${row('Mod name', ed ? '' : 'Author mode only', input('name', 'w-lg', ''))}

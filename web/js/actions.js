@@ -12,8 +12,9 @@ export async function openPath(path, { quiet = false } = {}) {
   state.busy = true;
   schedule();
   try {
-    const { scan, mo2 } = await call('oar.scan', { root: path });
-    state.ws = new Workspace(scan, mo2, state.schema);
+    const { scan, mo2, overwrite } = await call('oar.scan', { root: path });
+    state.ws = new Workspace(scan, mo2, state.schema, overwrite);
+    await applyMo2Profile(mo2Choice(state.ws));
     state.view = 'start';
     state.modId = null;
     state.submodId = null;
@@ -32,6 +33,45 @@ export async function openPath(path, { quiet = false } = {}) {
     state.busy = false;
     schedule();
   }
+}
+
+// ───────── MO2 profile (read only: the tool never edits modlist.txt) ─────────
+
+const MO2_PREF_KEY = 'oar.mo2Profile';
+
+/** Profile remembered for this MO2 instance ('' = ignore MO2), else the one MO2 has selected. */
+function mo2Choice(ws) {
+  if (!ws.mo2Usable) return null;
+  try {
+    const saved = JSON.parse(localStorage.getItem(MO2_PREF_KEY) ?? '{}')[ws.mo2.instanceDir.toLowerCase()];
+    if (saved === '' || ws.mo2.profiles.includes(saved)) return saved;
+  } catch { /* storage unavailable */ }
+  const { selectedProfile, profiles } = ws.mo2;
+  return profiles.includes(selectedProfile) ? selectedProfile : profiles.includes('Default') ? 'Default' : profiles[0] ?? null;
+}
+
+function rememberMo2Choice(ws, profile) {
+  try {
+    const all = JSON.parse(localStorage.getItem(MO2_PREF_KEY) ?? '{}');
+    all[ws.mo2.instanceDir.toLowerCase()] = profile;
+    localStorage.setItem(MO2_PREF_KEY, JSON.stringify(all));
+  } catch { /* storage unavailable */ }
+}
+
+/** Reads the profile's modlist.txt into the workspace; '' or null leaves every mod counted as on. */
+export async function applyMo2Profile(profile) {
+  const ws = state.ws;
+  if (!ws?.mo2Usable) return;
+  ws.mo2Ignored = profile === '';
+  if (!profile || !ws.mo2.profiles.includes(profile)) { ws.setMo2Profile(null, null); schedule(); return; }
+  try {
+    const { mods } = await call('mo2.modlist', { profilesDir: ws.mo2.profilesDir, profile });
+    if (state.ws === ws) ws.setMo2Profile(profile, mods);
+  } catch (e) {
+    ws.setMo2Profile(null, null);
+    toast('Could not read the MO2 profile', e.message, 'warn');
+  }
+  schedule();
 }
 
 export async function refreshRecent() {
@@ -103,6 +143,52 @@ export const actions = {
     };
   },
   closePopover() { state.popover = null; },
+
+  async mo2Menu(el) {
+    const ws = state.ws;
+    if (!ws?.mo2Usable) return;
+    const rect = el.getBoundingClientRect();
+    // how many of the opened OAR mods each profile ticks
+    const counts = new Map();
+    for (const p of ws.mo2.profiles) {
+      try {
+        const { mods } = await call('mo2.modlist', { profilesDir: ws.mo2.profilesDir, profile: p });
+        counts.set(p, ws.loadedCountWith(mods));
+      } catch { counts.set(p, null); }
+    }
+    state.popover = {
+      type: 'menu', rect, width: 300, items: [
+        { header: 'MO2 profiles (from ModOrganizer.ini)' },
+        ...ws.mo2.profiles.map((p) => ({ act: 'mo2Select', label: p, icon: p === ws.mo2Profile ? 'check' : 'blank', hint: counts.get(p) == null ? 'unreadable' : `${counts.get(p)} on`, data: { profile: p } })),
+        '-',
+        { act: 'mo2Reload', label: 'Read MO2 again', icon: 'refresh' },
+        ws.mo2Profile
+          ? { act: 'mo2Select', label: 'Ignore MO2 (treat all as on)', icon: 'blank', data: { profile: '' } }
+          : { act: 'mo2Select', label: `Use MO2 profile (${ws.mo2.selectedProfile ?? ws.mo2.profiles[0] ?? '—'})`, icon: 'blank', data: { profile: ws.mo2.selectedProfile ?? ws.mo2.profiles[0] ?? '' } },
+      ],
+    };
+    schedule();
+  },
+  async mo2Select(el) {
+    state.popover = null;
+    const ws = state.ws;
+    if (!ws?.mo2Usable) return;
+    const profile = el.dataset.profile ?? '';
+    rememberMo2Choice(ws, profile);
+    await applyMo2Profile(profile);
+  },
+  async mo2Reload() {
+    state.popover = null;
+    const ws = state.ws;
+    if (!ws?.mo2Usable) return;
+    try {
+      const fresh = await call('mo2.detect', { path: ws.root });
+      if (fresh) Object.assign(ws.mo2, { profiles: fresh.profiles, selectedProfile: fresh.selectedProfile });
+    } catch { /* keep what we had */ }
+    await applyMo2Profile(ws.mo2Ignored ? '' : ws.mo2Profile ?? mo2Choice(ws));
+    toast(ws.mo2Profile ? `Read MO2 profile ${ws.mo2Profile}` : 'MO2 profile not used', ws.mo2Profile ? `${ws.mods.filter((m) => m.mo2 === 'on').length} of ${ws.mods.length} OAR mods on` : '');
+  },
+  setMo2Filter(el) { state.mo2Filter = el.dataset.v; },
 
   openMod(el) {
     state.modId = el.dataset.id;
@@ -388,6 +474,7 @@ export const actions = {
       await call('fs.writeText', { path: `${modDir}\\config.json`, text: stringify(doc) });
       const mod = new ReplacerMod(state.ws, { path: modDir, folder: name, managerMod: name, project, config: stringify(doc), user: null, submods: [] });
       state.ws.mods.unshift(mod);
+      state.ws.computeMo2();
       state.modId = mod.id;
       state.submodId = null;
       state.view = 'mod';

@@ -403,3 +403,33 @@ select.mini-select.enum { min-width: 200px; }
 .savebar .state .dot.dot-success { background: var(--success); }
 .legacy-note { display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 8px; background: rgba(255, 255, 255, 0.03); }
 .legacy-note svg { color: var(--text-5); flex-shrink: 0; }
+
+/* ── MO2 profile (read only) ── */
+.mo2-wrap { flex-shrink: 0; margin-top: 14px; }
+.mo2-wrap .sb-section-head { margin-top: 8px; }
+.sb-sections.with-mo2 { margin-top: 4px; }
+.mo2-box { display: flex; flex-direction: column; gap: 4px; padding: 8px; border-radius: 10px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--line-1); }
+.mo2-profile { height: 30px; display: flex; align-items: center; gap: 8px; padding: 0 6px; border-radius: 7px; color: var(--text); min-width: 0; }
+.mo2-profile:hover { background: var(--hover); }
+.mo2-profile svg { color: var(--text-5); flex-shrink: 0; }
+.mo2-logo { height: 18px; display: inline-flex; align-items: center; padding: 0 5px; border-radius: 4px; background: rgb(var(--accent-rgb) / 0.16); color: var(--accent-text); font-size: 10px; font-weight: 700; letter-spacing: 0.04em; flex-shrink: 0; }
+.mo2-logo.sm { height: 15px; font-size: 9px; padding: 0 4px; }
+.mo2-sub { padding: 0 6px; font-size: 11.5px; color: var(--text-5); }
+.mo2-seg { margin-left: auto; }
+.mo2-seg .seg-btn { height: 20px; padding: 0 7px; font-size: 11px; }
+.sb-row.mo2-off .ell, .cf-row.mo2-off .ell { opacity: 0.45; }
+.mo2-tag { font-size: 10px; padding: 0 5px; border-radius: 4px; background: rgba(255, 255, 255, 0.07); color: var(--text-5); flex-shrink: 0; }
+.cf-row .mo2-tag { margin-left: auto; }
+.cf-row.mo2-off .mono { margin-left: 8px; opacity: 0.45; }
+.mo2-banner { display: flex; gap: 10px; margin-bottom: 18px; padding: 12px 14px; border-radius: 12px; background: rgba(255, 255, 255, 0.04); border: 1px dashed var(--line-4); color: var(--text-2); font-size: 13px; line-height: 1.55; }
+.mo2-banner > svg { color: var(--text-4); margin-top: 3px; flex-shrink: 0; }
+.mo2-banner b { font-weight: 500; color: var(--text); }
+.mo2-chip { background: rgba(255, 255, 255, 0.07); color: var(--text-3); }
+.mo2-note { display: flex; gap: 8px; font-size: 12px; color: var(--text-4); line-height: 1.55; }
+.mo2-note svg { margin-top: 2px; flex-shrink: 0; color: var(--text-5); }
+.mo2-note b { color: var(--text-2); font-weight: 500; }
+.ed-col > .warn-box { margin-bottom: 18px; align-items: flex-start; }
+.warn-box .btn { flex-shrink: 0; }
+.ok-line { display: flex; align-items: baseline; gap: 8px; font-size: 12.5px; color: var(--text-2); line-height: 1.55; }
+.ok-line .dot { width: 6px; height: 6px; flex-shrink: 0; transform: translateY(-1px); }
+.menu-label { padding: 6px 9px 4px; font-size: 11px; color: var(--text-6); }
