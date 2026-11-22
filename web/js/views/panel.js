@@ -3,6 +3,7 @@ import { esc, ic, plural } from '../core.js';
 import { state, registry, currentSubmod, canEdit } from '../state.js';
 import { nameOf } from '../model/schema.js';
 import { stringify } from '../model/json.js';
+import { originalOf } from '../model/workspace.js';
 
 export function rightPanel() {
   if (!state.panel) return '';
@@ -44,21 +45,22 @@ function emptyPanel(sub) {
 
 function animPanel(sub, target) {
   const ws = state.ws;
-  const others = ws.replacersOf(target, sub.mod.project).filter((s) => s !== sub);
+  const orig = originalOf(sub.mod, target);
+  const others = orig ? ws.replacersOf(orig.anim, orig.project).filter((s) => s !== sub) : [];
   const mine = [...sub.files.filter((f) => targetLower(f) === target.toLowerCase()), ...sub.pendingFiles.filter((p) => targetLower(p.rel) === target.toLowerCase()).map((p) => p.rel)];
   const higher = others.filter((s) => s.priority > sub.priority);
   const top = others[0];
   const rows = others.slice(0, 12).map((s) => `<div class="cf-row" data-act="openSubmod" data-id="${s.id}"><span class="ell"><span style="color:var(--text-5)">${esc(s.mod.name)} ›</span> ${esc(s.name)}</span><span class="mono">${s.priority}</span></div>`).join('');
   const me = `<div class="cf-row you"><span class="ell"><span style="color:var(--text-5)">${esc(sub.mod.name)} ›</span> ${esc(sub.name)}</span><span class="mono">${sub.priority}</span></div>`;
-  const listHtml = [...others.filter((s) => s.priority >= sub.priority).slice(0, 12)].length || others.length
-    ? `${rows}${others.length > 12 ? `<div class="cf-row"><span class="set-desc">… ${others.length - 12} more</span></div>` : ''}${me}` : me;
+  const listHtml = `${rows}${others.length > 12 ? `<div class="cf-row"><span class="set-desc">… ${others.length - 12} more</span></div>` : ''}${me}`;
+  const originalPath = orig ? `meshes\\actors\\${orig.project}\\animations\\${orig.anim}` : `meshes\\${sub.mod.prefix ? `${sub.mod.prefix}\\` : ''}${target}`;
   const warn = higher.length
     ? `<div class="warn-box">${ic('info', 15)}<span><b>${plural(higher.length, 'other submod')}</b> replace this animation with higher priority. Yours (${sub.priority}) plays only when none of their conditions match.</span></div>`
     : others.length ? `<div class="set-info ok" style="display:flex"><i></i>Yours has the highest priority of ${plural(others.length + 1, 'submod')}.</div>` : '';
   return `<aside class="rpanel"><div class="rp-head"><span class="grow">Animation</span><button class="icon-btn" data-act="clearSelection">${ic('x')}</button></div>
     <div class="rp-body">
-      <div><div class="rp-name mono" style="color:var(--text);font-size:14px">${esc(target.split('\\').pop())}</div><div class="rp-desc" style="margin-top:6px">${isVanilla(target, sub.mod.project) ? 'Vanilla animation' : 'Not found in the game’s Animations BSA — added by another mod, or a custom name.'}</div></div>
-      <dl class="rp-grid"><dt>Original</dt><dd class="mono" style="font-size:11.5px">meshes\\actors\\${esc(sub.mod.project)}\\animations\\${esc(target)}</dd><dt>Your files</dt><dd>${mine.length}${mine.length > 1 ? ' (variants)' : ''}</dd></dl>
+      <div><div class="rp-name mono" style="color:var(--text);font-size:14px">${esc(target.split('\\').pop())}</div><div class="rp-desc" style="margin-top:6px">${orig && isVanilla(orig.anim, orig.project) ? 'Vanilla animation' : state.vanilla.get(orig?.project ?? 'character')?.length ? 'Not found in the game’s Animations BSA — added by another mod, or a custom name.' : ''}</div></div>
+      <dl class="rp-grid"><dt>Original</dt><dd class="mono" style="font-size:11.5px">${esc(originalPath)}</dd><dt>Your files</dt><dd>${mine.length}${mine.length > 1 ? ' (variants)' : ''}</dd></dl>
       ${warn}
       ${others.length ? `<div class="rp-label">Also replaced by</div><div class="cf-list">${listHtml}</div>` : '<div class="rp-desc">No other loaded submod replaces this animation.</div>'}
       ${higher.length && canEdit('settings') ? `<button class="btn btn-secondary" data-act="priorityAbove" data-value="${top.priority + 1}">Set priority above all (${top.priority + 1})</button>` : ''}

@@ -6,8 +6,12 @@ namespace OarTool;
 ///
 /// Accepted roots: a mod manager "mods" folder, a single mod folder, a Data folder, an
 /// OpenAnimationReplacer folder, or one replacer mod folder inside it.
-/// Layout (OAR): meshes\actors\{project}\animations\OpenAnimationReplacer\{mod}\config.json
-///               ...\{mod}\{submod}\config.json (+ user.json) + .hkx files mirroring animations\
+///
+/// Like OAR (Parsing.cpp, directory cache) every folder named OpenAnimationReplacer anywhere under
+/// Data\meshes counts, not only meshes\actors\{project}\animations\. A replacement file's original is
+/// "{folder between meshes and OpenAnimationReplacer}\{path inside the submod}" — Prefix carries the first part.
+///   meshes\actors\character\animations\OpenAnimationReplacer\{mod}\{submod}\mt_idle.hkx
+///   meshes\OpenAnimationReplacer\{mod}\{submod}\Actors\Character\animations\mt_idle.hkx   (same original)
 /// </summary>
 internal static class OarScanner
 {
@@ -16,7 +20,7 @@ internal static class OarScanner
 
     public sealed record SubmodDto(string Path, string Folder, string? Config, string? User, List<string> Files);
 
-    public sealed record ModDto(string Path, string Folder, string? ManagerMod, string Project, string? Config, string? User, List<SubmodDto> Submods);
+    public sealed record ModDto(string Path, string Folder, string? ManagerMod, string Project, string Prefix, string? Config, string? User, List<SubmodDto> Submods);
 
     public sealed record LegacyDto(string Path, string? ManagerMod, string Project, int Count);
 
@@ -30,18 +34,19 @@ internal static class OarScanner
         var errors = new List<string>();
 
         string name = Path.GetFileName(root);
-        string? parentName = Path.GetFileName(Path.GetDirectoryName(root) ?? "");
+        string? parent = Path.GetDirectoryName(root);
+        string? parentName = Path.GetFileName(parent ?? "");
 
         if (name.Equals(OarFolder, StringComparison.OrdinalIgnoreCase))
         {
-            ReadOarFolder(root, null, ProjectOf(root), mods, errors);
+            ReadOarFolder(root, null, PrefixOf(root), mods, errors);
         }
         else if (string.Equals(parentName, OarFolder, StringComparison.OrdinalIgnoreCase))
         {
-            if (ReadMod(root, null, ProjectOf(root), errors) is { } single)
+            if (ReadMod(root, null, PrefixOf(parent!), errors) is { } single)
                 mods.Add(single);
         }
-        else if (HasActors(root))
+        else if (HasMeshes(root))
         {
             ReadDataLike(root, ManagerModOf(root), mods, legacy, errors);
         }
@@ -50,9 +55,9 @@ internal static class OarScanner
             // A mods folder (or any folder of folders): each child that looks like a mod / Data folder.
             foreach (string child in SafeDirs(root, errors).OrderBy(d => d, StringComparer.OrdinalIgnoreCase))
             {
-                if (HasActors(child))
+                if (HasMeshes(child))
                     ReadDataLike(child, Path.GetFileName(child), mods, legacy, errors);
-                else if (Directory.Exists(Path.Combine(child, "Data")) && HasActors(Path.Combine(child, "Data")))
+                else if (HasMeshes(Path.Combine(child, "Data")))
                     ReadDataLike(Path.Combine(child, "Data"), Path.GetFileName(child), mods, legacy, errors);
             }
         }
@@ -60,7 +65,7 @@ internal static class OarScanner
         return new ScanDto(root, mods, legacy, errors);
     }
 
-    private static bool HasActors(string dir) => Directory.Exists(Path.Combine(dir, "meshes", "actors"));
+    private static bool HasMeshes(string dir) => Directory.Exists(Path.Combine(dir, "meshes"));
 
     private static string? ManagerModOf(string dataLike)
     {
@@ -68,33 +73,46 @@ internal static class OarScanner
         return n.Equals("Data", StringComparison.OrdinalIgnoreCase) ? null : n;
     }
 
+    /// <summary>Walks meshes\ for OAR and DAR folders (not descending into them).</summary>
     private static void ReadDataLike(string dataLike, string? managerMod, List<ModDto> mods, List<LegacyDto> legacy, List<string> errors)
     {
-        string actors = Path.Combine(dataLike, "meshes", "actors");
-        foreach (string projectDir in SafeDirs(actors, errors))
+        string meshes = Path.Combine(dataLike, "meshes");
+        var stack = new Stack<string>();
+        stack.Push(meshes);
+        var found = new List<string>();
+        while (stack.Count > 0)
         {
-            string project = Path.GetFileName(projectDir);
-            string anims = Path.Combine(projectDir, "animations");
-            if (!Directory.Exists(anims))
-                continue;
-            string oar = Path.Combine(anims, OarFolder);
-            if (Directory.Exists(oar))
-                ReadOarFolder(oar, managerMod, project, mods, errors);
-            string dar = Path.Combine(anims, DarFolder, "_CustomConditions");
-            if (Directory.Exists(dar))
-                legacy.Add(new LegacyDto(dar, managerMod, project, SafeDirs(dar, errors).Count()));
+            string dir = stack.Pop();
+            foreach (string sub in SafeDirs(dir, errors))
+            {
+                string n = Path.GetFileName(sub);
+                if (n.Equals(OarFolder, StringComparison.OrdinalIgnoreCase))
+                    found.Add(sub);
+                else if (n.Equals(DarFolder, StringComparison.OrdinalIgnoreCase))
+                {
+                    string custom = Path.Combine(sub, "_CustomConditions");
+                    if (Directory.Exists(custom))
+                        legacy.Add(new LegacyDto(custom, managerMod, ProjectOfPrefix(Path.GetRelativePath(meshes, dir)), SafeDirs(custom, errors).Count()));
+                }
+                else
+                    stack.Push(sub);
+            }
         }
+        found.Sort(StringComparer.OrdinalIgnoreCase);
+        foreach (string oar in found)
+            ReadOarFolder(oar, managerMod, Path.GetRelativePath(meshes, Path.GetDirectoryName(oar)!) is "." ? "" : Path.GetRelativePath(meshes, Path.GetDirectoryName(oar)!), mods, errors);
     }
 
-    private static void ReadOarFolder(string oarDir, string? managerMod, string project, List<ModDto> mods, List<string> errors)
+    private static void ReadOarFolder(string oarDir, string? managerMod, string prefix, List<ModDto> mods, List<string> errors)
     {
         foreach (string modDir in SafeDirs(oarDir, errors).OrderBy(d => d, StringComparer.OrdinalIgnoreCase))
-            if (ReadMod(modDir, managerMod, project, errors) is { } mod)
+            if (ReadMod(modDir, managerMod, prefix, errors) is { } mod)
                 mods.Add(mod);
     }
 
-    private static ModDto? ReadMod(string modDir, string? managerMod, string project, List<string> errors)
+    private static ModDto? ReadMod(string modDir, string? managerMod, string prefix, List<string> errors)
     {
+        string project = ProjectOfPrefix(prefix);
         var submods = new List<SubmodDto>();
         foreach (string subDir in SafeDirs(modDir, errors).OrderBy(d => d, StringComparer.OrdinalIgnoreCase))
         {
@@ -108,7 +126,7 @@ internal static class OarScanner
         string? modUser = Read(Path.Combine(modDir, "user.json"), errors);
         if (modConfig is null && modUser is null && submods.Count == 0)
             return null;
-        return new ModDto(modDir, Path.GetFileName(modDir), managerMod, project, modConfig, modUser, submods);
+        return new ModDto(modDir, Path.GetFileName(modDir), managerMod, project, prefix, modConfig, modUser, submods);
     }
 
     /// <summary>Relative .hkx paths inside a submod (subfolders mirror animations\, e.g. "male\mt_idle.hkx").</summary>
@@ -154,13 +172,24 @@ internal static class OarScanner
         }
     }
 
-    /// <summary>"character" from ...\meshes\actors\character\animations\OpenAnimationReplacer\...</summary>
-    private static string ProjectOf(string path)
+    /// <summary>Folder between meshes\ and an OpenAnimationReplacer folder ("" when it sits right under meshes).</summary>
+    private static string PrefixOf(string oarDir)
     {
-        string[] parts = path.Split(Path.DirectorySeparatorChar);
-        for (int i = 0; i + 2 < parts.Length; i++)
-            if (parts[i].Equals("actors", StringComparison.OrdinalIgnoreCase) && parts[i + 2].Equals("animations", StringComparison.OrdinalIgnoreCase))
-                return parts[i + 1];
-        return "character";
+        string? parent = Path.GetDirectoryName(oarDir);
+        string[] parts = (parent ?? "").Split(Path.DirectorySeparatorChar);
+        int m = Array.FindLastIndex(parts, p => p.Equals("meshes", StringComparison.OrdinalIgnoreCase));
+        return m < 0 ? "" : string.Join(Path.DirectorySeparatorChar, parts.Skip(m + 1));
+    }
+
+    /// <summary>
+    /// "character" from "actors\character\animations", "character\_1stperson" from
+    /// "actors\character\_1stperson\animations"; "" when the prefix isn't a behavior project folder.
+    /// </summary>
+    private static string ProjectOfPrefix(string prefix)
+    {
+        string[] parts = prefix.Split(Path.DirectorySeparatorChar);
+        return parts.Length >= 3 && parts[0].Equals("actors", StringComparison.OrdinalIgnoreCase) && parts[^1].Equals("animations", StringComparison.OrdinalIgnoreCase)
+            ? string.Join(Path.DirectorySeparatorChar, parts[1..^1])
+            : "";
     }
 }

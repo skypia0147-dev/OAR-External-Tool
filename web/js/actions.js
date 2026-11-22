@@ -2,13 +2,13 @@
 import { call } from './bridge.js';
 import { state, registry, schedule, toast, currentMod, currentSubmod, canEdit } from './state.js';
 import { idOf, basename, dirname, safeName, plural } from './core.js';
-import { Workspace, ReplacerMod, Submod, targetOf, FUNCTION_SETS } from './model/workspace.js';
+import { Workspace, ReplacerMod, Submod, targetOf, originalOf, targetFor, projectFor, FUNCTION_SETS } from './model/workspace.js';
 import { parse, stringify, clone } from './model/json.js';
-import { nameOf, migrateLegacy } from './model/schema.js';
+import { nameOf, migrateLegacy, defaultFor } from './model/schema.js';
 
 // ───────── folders ─────────
 
-export async function openPath(path) {
+export async function openPath(path, { quiet = false } = {}) {
   state.busy = true;
   schedule();
   try {
@@ -25,7 +25,7 @@ export async function openPath(path) {
     refreshRecent();
     loadVanilla('character');
     const bad = state.ws.problems().filter((p) => p.level === 'error').length;
-    toast(`Opened ${plural(state.ws.mods.length, 'OAR mod')}`, bad ? `${plural(bad, 'problem')} — see Problems` : scan.root, bad ? 'warn' : 'ok');
+    if (!quiet) toast(`Opened ${plural(state.ws.mods.length, 'OAR mod')}`, bad ? `${plural(bad, 'problem')} — see Problems` : scan.root, bad ? 'warn' : 'ok');
   } catch (e) {
     toast('Could not open the folder', e.message, 'error');
   } finally {
@@ -122,7 +122,7 @@ export const actions = {
     state.submodId = sub.id;
     state.view = 'submod';
     state.palette = null;
-    loadVanilla(sub.mod.project);
+    loadVanilla(projectFor(sub.mod));
     // opened from elsewhere (mod page, search, problems): bring its row into view in the list
     if (changed && !el.closest('.sm-rows')) {
       setTimeout(() => document.querySelector('.sm-row[aria-selected="true"]')?.scrollIntoView({ block: 'center' }), 50);
@@ -253,7 +253,8 @@ export const actions = {
     if (!e) return;
     migrateLegacy(e.obj);
     const key = el.dataset.comp;
-    const v = e.obj[key] && typeof e.obj[key] === 'object' ? e.obj[key] : (e.obj[key] = { scope: 'Local', shouldResetOnLoopOrEcho: nameOf(e.obj) === 'Random' });
+    const comp = state.schema.def(nameOf(e.obj), e.kind)?.components.find((c) => c.key === key);
+    const v = e.obj[key] && typeof e.obj[key] === 'object' ? e.obj[key] : (e.obj[key] = comp ? defaultFor(comp) : {});
     v.shouldResetOnLoopOrEcho = !v.shouldResetOnLoopOrEcho;
   },
 
@@ -376,7 +377,7 @@ export const actions = {
     // The parent must be open (writes are limited to opened folders).
     if (!state.ws || state.ws.root.toLowerCase() !== parent.toLowerCase()) {
       if (state.ws?.dirty) { d.error = 'Save or discard the open changes first.'; return; }
-      await openPath(parent);
+      await openPath(parent, { quiet: true });
       if (!state.ws) return;
     }
     const modDir = `${parent}\\${name}\\meshes\\actors\\${project}\\animations\\OpenAnimationReplacer\\${name}`;
@@ -452,20 +453,25 @@ export const actions = {
 
   // ───────── animation files ─────────
   async browseFiles() {
-    const r = await call('dialog.pickFiles', { title: 'Choose .hkx animations' });
-    if (r?.paths?.length) addFiles(currentSubmod(), r.paths);
+    // start where the last files came from, else in the opened folder
+    const r = await call('dialog.pickFiles', { title: 'Choose .hkx animations', initial: state.lastBrowseDir ?? state.ws?.root });
+    if (r?.paths?.length) {
+      state.lastBrowseDir = dirname(r.paths[0]);
+      addFiles(currentSubmod(), r.paths);
+    }
   },
   pickOriginal(el, ev) {
     ev.stopPropagation();
     const sub = currentSubmod();
-    loadVanilla(sub.mod.project);
+    loadVanilla(projectFor(sub.mod));
     const p = sub.pendingFiles.find((x) => x.src === el.dataset.src);
-    state.popover = { type: 'original', rect: el.getBoundingClientRect(), src: el.dataset.src, project: sub.mod.project, query: p?.target ? basename(p.target).replace(/\.hkx$/i, '') : basename(el.dataset.src).replace(/\.hkx$/i, '').replace(/[_-]?(var\d*|[a-z]|\d+)$/i, ''), hi: 0 };
+    state.popover = { type: 'original', rect: el.getBoundingClientRect(), src: el.dataset.src, project: projectFor(sub.mod), query: p?.target ? basename(p.target).replace(/\.hkx$/i, '') : basename(el.dataset.src).replace(/\.hkx$/i, '').replace(/[_-]?(var\d*|[a-z]|\d+)$/i, ''), hi: 0 };
   },
   chooseOriginal(el) {
     const sub = currentSubmod();
     const p = sub.pendingFiles.find((x) => x.src === state.popover.src);
-    if (p) p.target = el.dataset.path;
+    if (!p) { state.popover = null; return; }
+    p.target = targetFor(sub.mod, projectFor(sub.mod), el.dataset.path);
     recomputeRels(sub);
     state.selId = `anim:${p.target}`;
     state.popover = null;
@@ -582,8 +588,9 @@ export function choosePicked(name) {
 
 export function addFiles(sub, paths) {
   if (!sub || !canEdit('files')) return;
-  const vanilla = state.vanilla.get(sub.mod.project) ?? [];
-  const counts = state.ws.replacementCounts(sub.mod.project);
+  const project = projectFor(sub.mod);
+  const vanilla = state.vanilla.get(project) ?? [];
+  const counts = state.ws.replacementCounts(project);
   let added = 0;
   for (const src of paths) {
     if (!/\.hkx$/i.test(src) || sub.pendingFiles.some((p) => p.src.toLowerCase() === src.toLowerCase())) continue;
@@ -591,7 +598,7 @@ export function addFiles(sub, paths) {
     // same file name as an original → that original (prefer the shortest path, e.g. "mt_idle.hkx" over "male\mt_idle.hkx")
     const guess = vanilla.filter((v) => basename(v).toLowerCase() === file).sort((a, b) => a.length - b.length)[0]
       ?? [...counts.keys()].find((k) => basename(k) === file) ?? '';
-    sub.pendingFiles.push({ src, target: guess, rel: '' });
+    sub.pendingFiles.push({ src, target: guess ? targetFor(sub.mod, project, guess) : '', rel: '' });
     added++;
   }
   recomputeRels(sub);
@@ -659,7 +666,8 @@ export function beginSave() {
       for (const p of s.pendingFiles) {
         if (!p.target) { blocked = true; checks.push({ level: 'warn', text: `${basename(p.src)}: choose which original animation it replaces`, sub: s.name }); continue; }
         ops.push({ type: 'copy', owner: s, src: p.src, dst: `${s.path}\\${p.rel}`, rel: `${s.folder}\\${p.rel}` });
-        const higher = ws.replacersOf(p.target, m.project).filter((o) => o !== s && o.priority > s.priority);
+        const orig = originalOf(m, p.target);
+        const higher = orig ? ws.replacersOf(orig.anim, orig.project).filter((o) => o !== s && o.priority > s.priority) : [];
         if (higher.length && !checks.some((c) => c.target === p.target))
           checks.push({ level: 'warn', target: p.target, text: `${plural(higher.length, 'submod')} replace ${p.target} with higher priority`, sub: `yours: ${s.priority}` });
         const plain = s.files.find((f) => f.toLowerCase() === p.target.toLowerCase());

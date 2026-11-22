@@ -76,11 +76,16 @@ export class Submod {
   get dirty() { return this.pendingFiles.length > 0 || stringify(this.doc) !== this.baseline; }
   get unreadable() { return this.problems.some((p) => p.kind === 'unreadable'); }
 
-  /** All replacement animation paths (relative to animations\) this submod provides. */
+  /** Replacement paths as written inside this submod (variants folded), e.g. "male\mt_idle.hkx". */
   animationTargets() {
     const out = new Set();
     for (const f of [...this.files, ...this.pendingFiles.map((p) => p.rel)]) out.add(targetOf(f));
     return [...out];
+  }
+
+  /** The originals this submod replaces, as { project, anim } (anim relative to actors\{project}\animations\). */
+  originals() {
+    return this.animationTargets().map((t) => originalOf(this.mod, t)).filter(Boolean);
   }
 
   /** Text to write for a save in the given mode, and where. */
@@ -120,6 +125,31 @@ export function targetOf(rel) {
   return [...parts.slice(0, vi), `${parts[vi].slice('_variants_'.length)}.hkx`].join('\\');
 }
 
+/**
+ * Which original a submod file replaces. OAR strips "OpenAnimationReplacer\{mod}\{submod}\" from the path,
+ * so the original is "{mod.prefix}\{file}" relative to meshes\ — e.g. prefix "actors\character\animations" +
+ * "mt_idle.hkx", or prefix "" + "Actors\Character\animations\mt_idle.hkx" (both the same original).
+ */
+export function originalOf(mod, target) {
+  const full = mod.prefix ? `${mod.prefix}\\${target}` : target;
+  // project may be nested: actors\character\_1stperson\animations\…
+  const m = /^actors\\(.+?)\\animations\\(.+)$/i.exec(full);
+  return m ? { project: m[1].toLowerCase(), anim: m[2] } : null;
+}
+
+/** Path to write inside a submod so it replaces actors\{project}\animations\{anim} (inverse of originalOf). */
+export function targetFor(mod, project, anim) {
+  const std = `actors\\${project}\\animations`;
+  if (mod.prefix.toLowerCase() === std.toLowerCase()) return anim;
+  if (!mod.prefix) return `${std}\\${anim}`;
+  return anim; // unusual layout: keep the name, OAR resolves it relative to the mod's folder
+}
+
+/** Behavior project used to list originals for a mod (its own, or character for meshes\OpenAnimationReplacer). */
+export function projectFor(mod) {
+  return mod.project || 'character';
+}
+
 export function isVariant(rel) {
   return rel.split('\\').some((p) => p.toLowerCase().startsWith('_variants_'));
 }
@@ -133,6 +163,8 @@ export class ReplacerMod {
     this.managerMod = dto.managerMod ?? null;
     // folder names are case-insensitive on Windows ("Character" and "character" are the same project)
     this.project = (dto.project ?? 'character').toLowerCase();
+    // folder between meshes\ and OpenAnimationReplacer\ ("" when the OAR folder sits right under meshes)
+    this.prefix = dto.prefix ?? `actors\\${this.project}\\animations`;
     this.problems = [];
     this.configText = dto.config ?? null;
     this.userText = dto.user ?? null;
@@ -190,20 +222,21 @@ export class Workspace {
 
   findMod(id) { return this.mods.find((m) => m.id === id) ?? null; }
 
-  /** Other submods (any mod) that replace the same animation path, highest priority first. */
-  replacersOf(target, project = 'character') {
-    const t = target.toLowerCase();
+  /** Submods (any mod, any folder layout) that replace this original, highest priority first. */
+  replacersOf(anim, project = 'character') {
+    const t = anim.toLowerCase();
+    const p = project.toLowerCase();
     return this.allSubmods()
-      .filter((s) => s.mod.project === project && s.animationTargets().some((a) => a.toLowerCase() === t))
+      .filter((s) => s.originals().some((o) => o.project === p && o.anim.toLowerCase() === t))
       .sort((a, b) => b.priority - a.priority);
   }
 
-  /** How many loaded submods replace each animation path (for the "pick original" list). */
+  /** How many loaded submods replace each original (for the "pick original" list). */
   replacementCounts(project = 'character') {
     const counts = new Map();
+    const p = project.toLowerCase();
     for (const s of this.allSubmods()) {
-      if (s.mod.project !== project) continue;
-      for (const t of s.animationTargets()) counts.set(t.toLowerCase(), (counts.get(t.toLowerCase()) ?? 0) + 1);
+      for (const o of new Set(s.originals().filter((x) => x.project === p).map((x) => x.anim.toLowerCase()))) counts.set(o, (counts.get(o) ?? 0) + 1);
     }
     return counts;
   }

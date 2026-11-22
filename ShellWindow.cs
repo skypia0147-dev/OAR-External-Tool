@@ -112,7 +112,7 @@ internal sealed class ShellWindow : Window
             core.ContextMenuRequested += OnContextMenu;
             core.WebMessageReceived += OnWebMessage;
             core.ProcessFailed += (_, e) => Log.Error($"WebView2 process failed: {e.ProcessFailedKind}");
-            Log.Info($"Start {typeof(ShellWindow).Assembly.GetName().Version} · WebView2 {env.BrowserVersionString}");
+            Log.Info($"Start {typeof(ShellWindow).Assembly.GetName().Version} - WebView2 {env.BrowserVersionString}");
             core.Navigate($"{Origin}/index.html");
         }
         catch (WebView2RuntimeNotFoundException)

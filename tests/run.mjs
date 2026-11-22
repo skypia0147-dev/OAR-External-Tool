@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { parse, stringify, stringifyLike } from '../web/js/model/json.js';
 import { Schema, argumentText, viewValue, migrateLegacy, LEGACY } from '../web/js/model/schema.js';
-import { Workspace, targetOf, isVariant } from '../web/js/model/workspace.js';
+import { Workspace, targetOf, isVariant, originalOf, targetFor } from '../web/js/model/workspace.js';
 
 const schema = new Schema(JSON.parse(fs.readFileSync(new URL('../web/data/conditions.json', import.meta.url), 'utf8')));
 let n = 0;
@@ -39,6 +39,17 @@ test('variants paths map to the animation they replace', () => {
   assert.equal(targetOf('male\\_variants_mt_idle\\b.hkx'), 'male\\mt_idle.hkx');
   assert.equal(targetOf('1hm_idle.hkx'), '1hm_idle.hkx');
   assert.ok(isVariant('_variants_x\\y.hkx') && !isVariant('x.hkx'));
+});
+
+test('originals from any OAR folder layout (OAR strips OpenAnimationReplacer\\mod\\submod)', () => {
+  const std = { prefix: 'actors\\character\\animations' };
+  const top = { prefix: '' };
+  const first = { prefix: 'actors\\Character\\_1stperson\\animations' };
+  assert.deepEqual(originalOf(std, 'male\\mt_idle.hkx'), { project: 'character', anim: 'male\\mt_idle.hkx' });
+  assert.deepEqual(originalOf(top, 'Actors\\Character\\animations\\mt_idle.hkx'), { project: 'character', anim: 'mt_idle.hkx' });
+  assert.deepEqual(originalOf(first, '1hm_idle.hkx'), { project: 'character\\_1stperson', anim: '1hm_idle.hkx' });
+  assert.equal(targetFor(std, 'character', 'mt_idle.hkx'), 'mt_idle.hkx');
+  assert.equal(targetFor(top, 'character', 'mt_idle.hkx'), 'actors\\character\\animations\\mt_idle.hkx');
 });
 
 test('user.json data over config.json info, as OAR loads it', () => {
@@ -84,6 +95,18 @@ test('new entries carry plugin and defaults', () => {
   assert.equal(w.requiredPlugin, 'Open Animation Replacer - RaySense');
   assert.equal(w.Comparison, '==');
   assert.deepEqual(w.Distance, { value: 0 });
+});
+
+test("OAR's constructor defaults are used for new entries", () => {
+  const r = schema.create('Random');
+  assert.equal(r.Comparison, '<');
+  assert.deepEqual(r.State, { scope: 'Local', shouldResetOnLoopOrEcho: true });
+  const m = schema.create('MovementSurfaceAngle');
+  assert.deepEqual(m.State, { shouldResetOnLoopOrEcho: false }); // single scope: OAR writes no "scope"
+  assert.deepEqual(m['Smoothing factor'], { value: 1 });
+  assert.deepEqual(schema.create('SpawnParticle', 'function').Scale, { value: 1 });
+  // a missing key reads as the default
+  assert.equal(argumentText({ condition: 'Random', 'Numeric value': { value: 0.5 } }, schema), 'random(0–0) < 0.5');
 });
 
 console.log(`${n} tests passed`);
