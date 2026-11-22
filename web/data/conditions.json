@@ -993,7 +993,10 @@
     },
     {
      "key": "State",
-     "type": "state"
+     "type": "state",
+     "scopes": [
+      "Reference"
+     ]
     }
    ]
   },
@@ -2394,12 +2397,18 @@
     },
     {
      "key": "State",
-     "type": "state"
+     "type": "state",
+     "scopes": [
+      "Submod"
+     ]
     },
     {
      "key": "Smoothing factor",
      "type": "numeric",
-     "desc": "The smoothing factor controls how much the previous value influences the new value.\n\nA factor closer to 0 means the smoothing will respond more slowly to changes, while a factor closer to 1 means it will respond more quickly. 1 is effectively instant."
+     "desc": "The smoothing factor controls how much the previous value influences the new value.\n\nA factor closer to 0 means the smoothing will respond more slowly to changes, while a factor closer to 1 means it will respond more quickly. 1 is effectively instant.",
+     "default": {
+      "value": 1.0
+     }
     }
    ]
   },
@@ -2447,7 +2456,8 @@
    "components": [
     {
      "key": "State",
-     "type": "state"
+     "type": "state",
+     "reset": true
     },
     {
      "key": "Minimum random value",
@@ -2459,7 +2469,8 @@
     },
     {
      "key": "Comparison",
-     "type": "comparison"
+     "type": "comparison",
+     "default": "<"
     },
     {
      "key": "Numeric value",
@@ -2983,7 +2994,10 @@
     },
     {
      "key": "Scale",
-     "type": "numeric"
+     "type": "numeric",
+     "default": {
+      "value": 1.0
+     }
     },
     {
      "key": "Play time",

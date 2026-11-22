@@ -3,7 +3,7 @@
 import { esc, ic, idOf } from '../core.js';
 import { state, registry } from '../state.js';
 import {
-  argumentText, nameOf, kindOf, COMPARISONS, ACTOR_VALUE_TYPES, GRAPH_VARIABLE_TYPES, STATE_SCOPES, unknownKeys, viewValue, legacyOf,
+  argumentText, nameOf, kindOf, COMPARISONS, ACTOR_VALUE_TYPES, GRAPH_VARIABLE_TYPES, unknownKeys, viewValue, legacyOf, defaultFor, scopesOf,
 } from '../model/schema.js';
 
 /**
@@ -111,7 +111,9 @@ function attrs(obj, c, field, extra = '') {
 }
 
 function componentEditor(obj, c, ctx) {
-  const v = viewValue(obj, c);
+  const raw = viewValue(obj, c);
+  // a missing key is what OAR loads as the constructor default
+  const v = raw === undefined ? defaultFor(c) : raw;
   const dis = ctx.editable ? '' : 'disabled';
   switch (c.type) {
     case 'bool':
@@ -130,9 +132,13 @@ function componentEditor(obj, c, ctx) {
     case 'point3':
       return [0, 1, 2].map((i) => `<input class="num-in" type="number" step="any" ${attrs(obj, c, `p${i}`)} value="${Array.isArray(v) ? v[i] ?? 0 : 0}" ${dis}>`).join('');
     case 'state': {
-      // OAR's Random resets its roll on loop/echo by default
-      const s = v ?? { scope: 'Local', shouldResetOnLoopOrEcho: nameOf(obj) === 'Random' };
-      return `<select class="mini-select" ${attrs(obj, c, 'scope')} ${dis}>${STATE_SCOPES.map((o) => `<option ${s.scope === o ? 'selected' : ''}>${o}</option>`).join('')}</select>
+      // missing key = OAR's constructor default for this condition
+      const s = v && typeof v === 'object' ? v : defaultFor(c);
+      const scopes = scopesOf(c);
+      const scopeCtl = scopes.length > 1
+        ? `<select class="mini-select" ${attrs(obj, c, 'scope')} ${dis}>${scopes.map((o) => `<option ${(s.scope ?? scopes[0]) === o ? 'selected' : ''}>${o}</option>`).join('')}</select>`
+        : `<span class="tag">${esc(scopes[0])} scope</span>`;
+      return `${scopeCtl}
         <label class="chk"><span class="cb" role="checkbox" aria-checked="${!!s.shouldResetOnLoopOrEcho}" ${ctx.editable ? `data-act="toggleStateReset" data-id="${idOf(obj)}" data-comp="${esc(c.key)}"` : ''}></span>Reset on loop or echo</label>`;
     }
     case 'preset': {

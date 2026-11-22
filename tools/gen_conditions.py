@@ -66,6 +66,31 @@ RE_VER = re.compile(r"GetRequiredVersion\(\)\s*const\s*override\s*\{\s*return\s*
 RE_CONST_NAME = re.compile(r"CONDITION_NAME\s*=\s*" + STR)
 RE_ENUM_HOOK = re.compile(r"(\w+)->value\.getEnumMap\s*=\s*&(\w+)::GetEnumMap")
 RE_ENUM_ENTRY = re.compile(r"enumMap\[\s*(-?\d+)\s*\]\s*=\s*" + STR)
+# Defaults set in constructors (what OAR puts in a newly added condition)
+RE_DEF_CMP = re.compile(r"(\w+)->SetComparisonOperator\(\s*ComparisonOperator::k(\w+)\s*\)")
+RE_DEF_NUM = re.compile(r"(\w+)->(?:value\.)?SetStaticValue\(\s*(-?[\d.]+)f?\s*\)")
+RE_DEF_BOOL = re.compile(r"(\w+)->bValue\s*=\s*(true|false)\s*;")
+RE_DEF_RESET = re.compile(r"(\w+)->SetShouldResetOnLoopOrEcho\(\s*(true|false)\s*\)")
+RE_DEF_SCOPES = re.compile(r"(\w+)->SetAllowedDataScopes\(\s*([^)]*)\)")
+OPERATORS = {"Equal": "==", "NotEqual": "!=", "Greater": ">", "GreaterEqual": ">=", "Less": "<", "LessEqual": "<="}
+SCOPES = {"kLocal": "Local", "kSubMod": "Submod", "kReplacerMod": "Replacer mod", "kReference": "Reference"}
+
+
+def parse_defaults(text: str) -> dict[str, dict]:
+    out: dict[str, dict] = {}
+    for var, op in RE_DEF_CMP.findall(text):
+        if op in OPERATORS:
+            out.setdefault(var, {})["value"] = OPERATORS[op]
+    for var, num in RE_DEF_NUM.findall(text):
+        out.setdefault(var, {})["value"] = {"value": float(num)}
+    for var, b in RE_DEF_BOOL.findall(text):
+        if var != "boolComponent" or "a_bIsLeft" not in text:  # left/right variants take a constructor argument
+            out.setdefault(var, {})["value"] = b == "true"
+    for var, b in RE_DEF_RESET.findall(text):
+        out.setdefault(var, {})["reset"] = b == "true"
+    for var, scopes in RE_DEF_SCOPES.findall(text):
+        out.setdefault(var, {})["scopes"] = [SCOPES[s] for s in re.findall(r"k\w+", scopes) if s in SCOPES]
+    return out
 
 
 def unescape(s: str) -> str:
@@ -128,9 +153,13 @@ def parse_classes(header: str, cpp: str, kind: str) -> dict[str, dict]:
         if post:
             for h in RE_ENUM_HOOK.finditer(post):
                 enum_hooks[h.group(1)] = h.group(2)
+        # constructor body inside the class declaration ("Cls() { ... }")
+        inline_ctor = re.search(rf"\b{cls}\s*\([^)]*\)\s*(?::[^{{]*)?\{{", body)
+        ctor_text = (block_after(body, inline_ctor.end() - 1)[0] if inline_ctor else "") + (ctor or "")
         classes[cls] = {
             "bases": bases,
             "comps": comps,
+            "defaults": parse_defaults(ctor_text),
             "name": unescape(name.group(1)) if name else None,
             "desc": unescape(desc.group(1)) if desc else "",
             "version": ".".join(ver.groups()) + ".0" if ver else None,
@@ -148,20 +177,24 @@ def enum_map(cpp: str, cls: str) -> list[list] | None:
     return entries or None
 
 
-def resolve(classes: dict[str, dict], cls: str, seen=None) -> tuple[list, dict]:
-    """Components and enum hooks including base classes (base first)."""
+def resolve(classes: dict[str, dict], cls: str, seen=None) -> tuple[list, dict, dict]:
+    """Components, enum hooks and constructor defaults including base classes (base first)."""
     seen = seen or set()
     if cls in seen or cls not in classes:
-        return [], {}
+        return [], {}, {}
     seen.add(cls)
-    comps, hooks = [], {}
+    comps, hooks, defaults = [], {}, {}
     for b in classes[cls]["bases"]:
-        bc, bh = resolve(classes, b, seen)
+        bc, bh, bd = resolve(classes, b, seen)
         comps += bc
         hooks.update(bh)
+        for k, v in bd.items():
+            defaults.setdefault(k, {}).update(v)
     comps += classes[cls]["comps"]
     hooks.update(classes[cls]["enumHooks"])
-    return comps, hooks
+    for k, v in classes[cls]["defaults"].items():
+        defaults.setdefault(k, {}).update(v)
+    return comps, hooks, defaults
 
 
 def build(classes, cpp_all: str, plugin: str | None, api: bool) -> list[dict]:
@@ -170,7 +203,7 @@ def build(classes, cpp_all: str, plugin: str | None, api: bool) -> list[dict]:
         # "! INVALID !" / "! DEPRECATED !" are placeholders OAR shows for unreadable entries.
         if not info["name"] or info["name"].startswith("!"):
             continue
-        comps, hooks = resolve(classes, cls)
+        comps, hooks, defaults = resolve(classes, cls)
         items = []
         seen_names = set()
         for c in comps:
@@ -188,6 +221,15 @@ def build(classes, cpp_all: str, plugin: str | None, api: bool) -> list[dict]:
                 em = enum_map(cpp_all, hooks[c["var"]])
                 if em:
                     item["enum"] = em
+            d = defaults.get(c["var"]) if c["var"] else None
+            if d:
+                if "value" in d and ctype in ("comparison", "numeric", "bool"):
+                    item["default"] = d["value"]
+                if ctype == "state":
+                    if "reset" in d:
+                        item["reset"] = d["reset"]
+                    if "scopes" in d:
+                        item["scopes"] = d["scopes"]
             items.append(item)
         entry = {"name": info["name"], "kind": info["kind"], "desc": info["desc"], "version": info["version"] or "1.0.0.0", "components": items}
         if plugin:

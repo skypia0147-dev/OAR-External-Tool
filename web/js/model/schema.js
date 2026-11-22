@@ -82,11 +82,17 @@ export class Schema {
   }
 }
 
+/** Scopes a state component may use (OAR default: Local or Submod). */
+export function scopesOf(component) {
+  return component.scopes?.length ? component.scopes : ['Local', 'Submod'];
+}
+
+/** What OAR puts in a newly added condition (constructor defaults from the generated definitions). */
 export function defaultFor(component) {
   switch (component.type) {
-    case 'numeric': return { value: component.enum ? component.enum[0][0] : 0 };
-    case 'bool': return false;
-    case 'comparison': return '==';
+    case 'numeric': return component.default && typeof component.default === 'object' ? { ...component.default } : { value: component.enum ? component.enum[0][0] : 0 };
+    case 'bool': return typeof component.default === 'boolean' ? component.default : false;
+    case 'comparison': return typeof component.default === 'string' ? component.default : '==';
     case 'form': return { pluginName: '', formID: '' };
     case 'keyword': return { editorID: '' };
     case 'text': return '';
@@ -94,7 +100,11 @@ export function defaultFor(component) {
     case 'conditions': return [];
     case 'functions': return [];
     case 'conditionFunctions': return { conditions: [], functions: [] };
-    case 'state': return { scope: 'Local', shouldResetOnLoopOrEcho: false };
+    case 'state': {
+      // OAR writes "scope" only when more than one scope is allowed
+      const scopes = scopesOf(component);
+      return scopes.length > 1 ? { scope: scopes[0], shouldResetOnLoopOrEcho: !!component.reset } : { shouldResetOnLoopOrEcho: !!component.reset };
+    }
     case 'preset': return '';
     default: return null;
   }
@@ -175,7 +185,7 @@ export function argumentText(obj, schema) {
   }
   const comps = d.components;
   if (comps.length === 0) return '';
-  const val = (c) => viewValue(obj, c);
+  const val = (c) => { const v = viewValue(obj, c); return v === undefined ? defaultFor(c) : v; };
   const byType = (t) => comps.filter((c) => c.type === t);
   // multi-condition entries (AND/OR/XOR/TARGET/PLAYER/MOUNT)
   if (comps.length === 1 && comps[0].type === 'conditions') return countText(obj[comps[0].key]?.length ?? 0, 'condition');
@@ -187,14 +197,14 @@ export function argumentText(obj, schema) {
   }
   if (name === 'Random') {
     const [mn, mx, , n] = [comps[1], comps[2], comps[3], comps[4]];
-    return `random(${componentText(val(mn), mn)}–${componentText(val(mx), mx)}) ${obj[cmp.key] ?? '<'} ${componentText(val(n), n)}`;
+    return `random(${componentText(val(mn), mn)}–${componentText(val(mx), mx)}) ${val(cmp)} ${componentText(val(n), n)}`;
   }
   if (cmp && nums.length >= 2) {
     const a = nums[nums.length - 2];
     const b = nums[nums.length - 1];
-    return `${componentText(val(a), a)} ${obj[cmp.key] ?? '=='} ${componentText(val(b), b)}`;
+    return `${componentText(val(a), a)} ${val(cmp)} ${componentText(val(b), b)}`;
   }
-  if (cmp && nums.length === 1) return `${obj[cmp.key] ?? '=='} ${componentText(val(nums[0]), nums[0])}`;
+  if (cmp && nums.length === 1) return `${val(cmp)} ${componentText(val(nums[0]), nums[0])}`;
   return comps.filter((c) => c.type !== 'state').map((c) => componentText(val(c), c)).filter(Boolean).join(', ');
 }
 

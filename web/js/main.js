@@ -1,7 +1,7 @@
 // Entry point: load definitions, draw the app, route events.
 import { call, on, inHost } from './bridge.js';
 import { state, registry, setRenderer, render, schedule, toast, currentMod, currentSubmod, canEdit } from './state.js';
-import { Schema, migrateLegacy } from './model/schema.js';
+import { Schema, migrateLegacy, defaultFor, nameOf } from './model/schema.js';
 import { titlebar, sidebar, toolbar, savebar, toasts } from './views/shell.js';
 import { submodList, submodEditor } from './views/submod.js';
 import { modPage, startPage, problemsPage, settingsPage } from './views/pages.js';
@@ -102,7 +102,11 @@ function onComponentInput(el) {
       obj[key] = arr;
       break;
     }
-    case 'scope': obj[key] = { ...(cur ?? {}), scope: el.value }; break;
+    case 'scope': {
+      const comp = state.schema.def(nameOf(obj), e.kind)?.components.find((c) => c.key === key);
+      obj[key] = { ...(cur && typeof cur === 'object' ? cur : comp ? defaultFor(comp) : {}), scope: el.value };
+      break;
+    }
     default: break;
   }
 }
