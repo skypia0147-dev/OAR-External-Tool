@@ -1,77 +1,66 @@
-# OAR External Tool 1.0 - User Guide
+# OAR External Tool 2.0 — User Guide
 
-This is an external editing tool designed to manage **Open Animation Replacer (OAR)** conditions easily and intuitively. It allows you to edit animation conditions via a web interface with clicks and drags, eliminating the need to modify complex JSON files manually.
-You can easily modify conditions without launching the game, just like using the OAR UI in-game.
+Edit **Open Animation Replacer (OAR)** mods without starting the game. The tool shows your mods the way the in-game OAR menu does (Replacer Mods → submods → conditions), and it can also build a new OAR mod from scratch.
+
+[한국어 설명](README_KO.md)
 
 ---
 
-## System Requirements
+## Requirements
 
 - **OS**: Windows 10 or 11 (64-bit)
-- **Runtime**: [.NET 9.0 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/9.0) (Required)
-- **WebView2**: [Microsoft Edge WebView2 Runtime](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) (Required, usually pre-installed)
+- **Runtime**: [.NET 9.0 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/9.0)
+- **WebView2**: [Microsoft Edge WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/) (already installed on most PCs)
+
+No network port is used. (1.x served its page on `localhost:8080` and showed "This localhost page can't be found" when another program used that port — fixed in 2.0.)
 
 ---
 
-## Important Disclaimer & Testing Status
+## Editing existing mods
 
-**Please note that this tool has not undergone extensive testing for complex condition configurations or deep edge cases.**
-I have primarily tested the features I frequently use, so unforeseen issues may occur. 
+1. **Open folder…** and pick your mod manager's `mods` folder (or one mod, or an `OpenAnimationReplacer` folder). Every replacer mod is listed on the left.
+2. Pick a mod, then a submod. The editor follows OAR's order: **Submod settings → Animation files → Conditions → Functions**.
+3. Click a condition to open it: **Negate**, condition type, and its fields. Drag rows to reorder, right panel for copy / paste / comment / delete, **Ctrl C / Ctrl V / Delete** on the selected condition.
+4. **Save** (Ctrl S).
 
-> [!IMPORTANT]
-> It is highly recommended to **backup your animation folders** before using this tool. 
+### Edit modes (top right)
 
-If you encounter any problems, please report them, and I will do my best to address them and provide fixes.
+| Mode | Saves to | Use it for |
+|---|---|---|
+| Inspect | nothing | reading only |
+| User | `user.json` next to the original | changing someone else's mod — their `config.json` stays untouched, and OAR loads your `user.json` instead |
+| Author | `config.json` | your own mods |
 
----
+**Delete user config** (bottom bar) sends a submod's `user.json` to the Recycle Bin, so OAR uses the original again.
 
-## Key Features
+### Problems page
 
-- **Simplified UI**: Functions found in the in-game UI have been streamlined for ease of use without sacrificing functionality.
-- **Auto Mod Base Creation**: Added a feature to automatically generate a mod base with the OAR folder structure.
-- **Folder Creation**: You can now create specific condition folders directly within the tool.
-- **RaySense Support**: Provides dedicated templates and a RaySense tab to edit specific conditions (Verticality, Wall Distance, Obstacle Type) in real-time.
-- **Hybrid Editing**: Integrated a system that allows both UI-based condition editing and a raw JSON editor.
-
----
-
-## Step-by-Step Guide
-
-### 1. Open Mod Folder
-1. Click the **[Open MOD]** button at the top.
-2. Select the Skyrim mod folder (or the `OpenAnimationReplacer` folder) you are currently working on or want to modify.
-3. When the browser asks for file access permissions, select **[Allow Edit Access]**. (This is required to save local files.)
-
-### 2. Select Animation Set
-- All animation settings (`config.json`) within the mod will appear in the **File Tree** on the left.
-- Click an item to view its detailed settings in the central area.
-- Use the **Search Bar** at the top right to filter by specific names or priorities.
-
-### 3. Edit Conditions
-- **Add**: Click the `+ Add Condition` button to select desired conditions (e.g., IsSneaking, HasPerk, etc.).
-- **Manage**: Use the `NOT` button on each condition card to invert it, or the `Copy` button to duplicate it.
-- **Move (Drag)**: Grab the left side of a card to reorder it or move it into a group like AND/OR.
-
-### 4. Save Changes
-- **Save Base**: Directly modifies and saves the original `config.json` file.
-- **Save User**: Creates and saves a `user.json` override file without touching the original (the safer method).
+Lists configs OAR can't read (broken JSON), repeated keys (OAR uses the first), submods in one mod that share a priority and replace the same animation, and conditions from plugins this tool has no editor for (those are kept exactly as they are and can be edited as JSON).
 
 ---
 
-## Precautions
+## Creating a new mod
 
-- This tool requires a **secure environment (HTTPS or localhost)** for all features to function.
-- Selecting a system folder (like the entire C drive) may slow down scanning. Please select the specific mod folder.
-- Always check if the "Unsaved Changes" message is visible in the status bar before finishing to ensure nothing is lost.
+1. **Create new mod** — name, author, where to create it (your MO2 `mods` folder is found automatically), and the behavior project (Character for humanoids).
+2. **New submod** — name and priority; start empty, copy another submod, or start from a template.
+3. **Animation files** — drop `.hkx` files (or a folder). For each file, choose which **original animation** it replaces; the list comes from the game's `Skyrim - Animations.bsa`. Two files for the same animation become **variants** (`_variants_<name>\`) automatically.
+   The right panel shows other submods that replace the same animation and their priority, with a button to put yours above them.
+4. **Conditions** — add them like in the editor, or use the quick-start buttons.
+5. **Save** — a review lists every file that will be written or copied. Nothing outside the new mod's folder is touched. In MO2, press F5 and enable the new mod.
 
----
-
----
-
-## Credits & References
-
-- **Open Animation Replacer (OAR)**: This tool is based on the logic and structure of the original [Open Animation Replacer](https://github.com/ersh1/OpenAnimationReplacer) developed by **Ersh**. All credits for the OAR framework go to them.
+New mods open in **Author** mode.
 
 ---
 
-*This program was created to support the Skyrim modding community.*
+## Notes
+
+- Files the tool didn't change are never rewritten. Saved files use OAR's own JSON layout, so a file saved without changes is identical to the original.
+- Conditions and their fields come from OAR's source (and RaySense). Conditions from other plugins still load and save; they are edited as JSON.
+- Back up your animation folders before large edits.
+
+---
+
+## Credits
+
+- **Open Animation Replacer** by **Ersh** — <https://github.com/ersh1/OpenAnimationReplacer>. Condition names, descriptions and fields are taken from its source.
+- Made by **Smooth**.
