@@ -60,7 +60,9 @@ New mods open in **Author** mode.
 
 ---
 
-## Credits
+## Credits and license
 
 - **Open Animation Replacer** by **Ersh** — <https://github.com/ersh1/OpenAnimationReplacer>. Condition names, descriptions and fields are taken from its source.
 - Made by **Smooth**.
+- License: **GPL-3.0** (`LICENSE.txt`, same as OAR). Third-party notices (OAR, WebView2 SDK): `THIRD_PARTY_NOTICES.txt`.
+- Source: <https://github.com/skypia0147-dev/OAR-External-Tool>

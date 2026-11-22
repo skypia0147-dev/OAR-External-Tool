@@ -12,6 +12,7 @@
     <Version>2.0.0</Version>
     <Product>OAR External Tool</Product>
     <Authors>Smooth</Authors>
+    <Copyright>Copyright (C) Smooth. GPL-3.0</Copyright>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
   </PropertyGroup>
 

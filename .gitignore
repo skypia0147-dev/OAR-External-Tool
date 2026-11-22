@@ -15,6 +15,7 @@ __pycache__/
 *.tmp
 *.log
 
-# Build output copied for releases (never commit WebView2 profiles)
+# Build output copied for releases (never commit WebView2 profiles); packages go to GitHub releases
 Release_Build/
+release/
 *.exe.WebView2/

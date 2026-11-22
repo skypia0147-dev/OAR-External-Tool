@@ -60,7 +60,9 @@ OAR이 읽지 못하는 설정(깨진 JSON), 반복된 키(OAR은 첫 번째 값
 
 ---
 
-## 크레딧
+## 크레딧과 라이선스
 
 - **Open Animation Replacer** — **Ersh** (<https://github.com/ersh1/OpenAnimationReplacer>). 조건 이름·설명·값 구성은 이 소스에서 가져왔습니다.
 - 제작: **Smooth**
+- 라이선스: **GPL-3.0** (`LICENSE.txt`, OAR과 같음). 제3자 고지(OAR, WebView2 SDK): `THIRD_PARTY_NOTICES.txt`
+- 소스: <https://github.com/skypia0147-dev/OAR-External-Tool>

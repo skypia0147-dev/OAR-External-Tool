@@ -9,18 +9,20 @@ enum values). OAR declares all of these in a regular way, e.g.
     numericComponent->value.getEnumMap = &IsEquippedTypeCondition::GetEnumMap;   (PostInitialize)
     enumMap[7] = "Bow"sv;                                                         (GetEnumMap)
 
-Usage: python tools/gen_conditions.py [--oar DIR] [--raysense DIR] [--out FILE]
+Usage: python tools/gen_conditions.py --oar <OpenAnimationReplacer\src> [--raysense <RaySense\src>] [--out FILE]
+       (or set OAR_SRC / RAYSENSE_SRC)
 """
 from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import sys
 from pathlib import Path
 
-DEFAULT_OAR = Path(r"C:\Users\sky__\Desktop\AI References\Plugin Source\OpenAnimationReplacer-main\src")
-DEFAULT_RAYSENSE = Path(r"F:\Anti\RaySense\src")
+DEFAULT_OAR = Path(os.environ["OAR_SRC"]) if os.environ.get("OAR_SRC") else None
+DEFAULT_RAYSENSE = Path(os.environ["RAYSENSE_SRC"]) if os.environ.get("RAYSENSE_SRC") else None
 DEFAULT_OUT = Path(__file__).resolve().parent.parent / "web" / "data" / "conditions.json"
 
 COMPONENT_TYPES = {
@@ -200,6 +202,8 @@ def main() -> int:
     ap.add_argument("--raysense", type=Path, default=DEFAULT_RAYSENSE)
     ap.add_argument("--out", type=Path, default=DEFAULT_OUT)
     args = ap.parse_args()
+    if args.oar is None:
+        ap.error("pass --oar <OpenAnimationReplacer source 'src' folder> or set OAR_SRC")
 
     read = lambda p: p.read_text(encoding="utf-8", errors="replace")
     cond_h, cond_cpp = read(args.oar / "Conditions.h"), read(args.oar / "Conditions.cpp")
