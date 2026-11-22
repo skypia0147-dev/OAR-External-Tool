@@ -3,12 +3,16 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net9.0-windows</TargetFramework>
-    <RootNamespace>OAREditorApp</RootNamespace>
+    <RootNamespace>OarTool</RootNamespace>
     <AssemblyName>OAR External Tool</AssemblyName>
     <Nullable>enable</Nullable>
-    <UseWindowsForms>true</UseWindowsForms>
+    <UseWPF>true</UseWPF>
     <ImplicitUsings>enable</ImplicitUsings>
     <ApplicationIcon>app_icon.ico</ApplicationIcon>
+    <Version>2.0.0</Version>
+    <Product>OAR External Tool</Product>
+    <Authors>Smooth</Authors>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,9 +20,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="index.html;style.css;js\**;Dynamic Terrain Animation\**">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <!-- The page is served from this folder through a WebView2 virtual host (no local port). -->
+    <Content Include="web\**" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="app_icon.ico" CopyToOutputDirectory="PreserveNewest" />
+    <Compile Remove="mockup\**;tests\**;tools\**;Release_Build\**" />
+    <None Remove="mockup\**;tests\**;tools\**" />
   </ItemGroup>
 
 </Project>
