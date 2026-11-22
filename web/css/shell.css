@@ -1,0 +1,83 @@
+/* 창 틀 · 사이드바 · 본문 — TitleBar.dc.html · Sidebar.dc.html */
+.app {
+  height: 100vh; min-width: 960px;
+  display: grid; grid-template-rows: var(--titlebar-h) minmax(0, 1fr); grid-template-columns: minmax(0, 1fr);
+  background: var(--bg);
+}
+
+/* ───────── 제목 표시줄 ───────── */
+.titlebar { min-width: 0; height: var(--titlebar-h); display: flex; align-items: center; user-select: none; -webkit-app-region: drag; app-region: drag; }
+.titlebar button { -webkit-app-region: no-drag; app-region: no-drag; }
+.tb-left { width: var(--sidebar-w); height: 100%; flex-shrink: 0; display: flex; align-items: center; gap: 8px; padding: 0 12px; }
+.tb-left .icon-btn { width: 30px; height: 30px; }
+.tb-name { font-weight: 500; white-space: nowrap; }
+.tb-center { flex: 1; min-width: 0; display: flex; justify-content: center; padding: 0 12px; }
+.tb-search {
+  width: 460px; max-width: 100%; height: 30px; display: flex; align-items: center; gap: 8px; padding: 0 10px;
+  border-radius: var(--r-sm); background: var(--panel-2); border: 1px solid rgba(255, 255, 255, 0.07); color: #767676;
+  transition: border-color 0.12s, color 0.12s;
+}
+.tb-search:hover { border-color: var(--line-3); color: var(--text-3); }
+.tb-right { display: flex; align-items: center; gap: 4px; padding-right: 8px; }
+.tb-jobs { height: 30px; display: flex; align-items: center; gap: 7px; padding: 0 10px; border-radius: var(--r-sm); background: var(--panel-2); color: var(--text-2); font-size: 12px; white-space: nowrap; }
+.tb-jobs:hover { background: #222222; }
+.tb-bell { width: 32px; height: 30px; position: relative; }
+.tb-badge { position: absolute; top: 6px; right: 7px; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+.win-ctrls { display: flex; height: 100%; color: var(--text-2); }
+.win-btn { width: 46px; height: 100%; display: flex; align-items: center; justify-content: center; }
+.win-btn svg { stroke-width: 1.3; }
+.win-btn:hover { background: rgba(255, 255, 255, 0.07); }
+.win-btn.close:hover { background: #c42b1c; color: #ffffff; }
+
+/* ───────── 몸통 ───────── */
+.shell-body { display: flex; min-height: 0; min-width: 0; }
+
+.sidebar { width: var(--sidebar-w); flex-shrink: 0; min-height: 0; display: flex; flex-direction: column; padding: 4px 8px 12px; }
+.app.sidebar-hidden .sidebar { display: none; }
+
+/* 새로 추가 — 아이콘만. 왼쪽 여백 8px = 아래 메뉴 줄과 같아 아이콘이 같은 세로줄(사이드바 8 + 8) */
+.sb-new { width: 34px; height: 34px; flex-shrink: 0; display: flex; align-items: center; padding-left: 8px; border-radius: var(--r-sm); color: var(--nav-fg); transition: background-color 0.12s, color 0.12s; }
+.sb-new:hover { background: var(--hover); color: var(--text); }
+
+.sb-nav { display: flex; flex-direction: column; gap: 1px; margin-top: 6px; }
+.sb-nav-item { height: 34px; display: flex; align-items: center; gap: 10px; padding: 0 8px; border-radius: var(--r-sm); color: var(--nav-fg); transition: background-color 0.12s, color 0.12s; }
+.sb-nav-item:hover { background: var(--hover); color: var(--text); }
+.sb-nav-item[aria-current="page"] { background: var(--active); color: var(--text-strong); }
+
+.sb-sections { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; margin-top: 18px; margin-right: -4px; padding-right: 4px; }
+.sb-section { display: flex; flex-direction: column; gap: 1px; margin-bottom: 14px; }
+.sb-section-head { height: 24px; display: flex; align-items: center; padding: 0 8px; font-size: 12px; color: var(--text-5); }
+.sb-section-action { font-size: 11px; color: var(--text-7); }
+.sb-section-action:hover { color: var(--text-3); }
+.sb-row { height: 30px; display: flex; align-items: center; gap: 9px; padding: 0 8px; border-radius: var(--r-sm); color: var(--row-fg); transition: background-color 0.12s, color 0.12s; }
+.sb-row:hover { background: var(--hover); color: var(--text); }
+.sb-row[aria-current="true"] { background: var(--active); color: var(--text-strong); }
+.sb-dot { width: 8px; height: 8px; flex-shrink: 0; border-radius: 50%; }
+.sb-dot.square { border-radius: 2px; }
+.sb-count { font-family: var(--font-mono); font-size: 11px; color: var(--text-6); }
+.sb-count.zero { color: #4a4a4a; }
+.sb-skeleton { height: 30px; display: flex; align-items: center; padding: 0 8px; }
+.sb-skeleton .skeleton { height: 10px; width: 70%; }
+.sb-section .state-error { padding: 6px 8px; font-size: 12px; }
+
+.sb-foot { display: flex; flex-direction: column; gap: 6px; padding-top: 10px; border-top: 1px solid var(--line-1); }
+.sb-status { display: flex; align-items: center; gap: 8px; padding: 0 8px; font-size: 11.5px; color: #767676; white-space: nowrap; }
+.sb-status .dot { width: 6px; height: 6px; }
+.sb-mock { align-self: flex-start; margin: 0 8px; font-size: 11.5px; color: var(--accent-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: calc(100% - 16px); }
+.sb-mock:hover { color: var(--accent-hover); }
+
+/* ───────── 본문 ───────── */
+.main {
+  flex: 1; min-width: 0; margin: 0 8px 8px 0; position: relative;
+  border-radius: var(--r-lg); background: var(--main); border: 1px solid var(--line-1);
+  overflow: hidden; display: flex; flex-direction: column;
+}
+.app.sidebar-hidden .main { margin-left: 8px; }
+.page { flex: 1; min-height: 0; overflow: auto; }
+
+/* ───────── 자리만 잡은 화면 ───────── */
+.ph { max-width: 880px; margin: 0 auto; padding: 56px 32px 48px; display: flex; flex-direction: column; gap: 20px; }
+.page-title { font-family: var(--font-serif); font-size: 28px; font-weight: 500; color: #efefef; letter-spacing: -0.01em; }
+.ph-head { display: flex; flex-direction: column; gap: 6px; }
+.ph-selection { display: flex; align-items: center; gap: 8px; color: var(--text-3); }
+.ph-selection .sb-dot { width: 9px; height: 9px; }

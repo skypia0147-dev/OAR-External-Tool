@@ -175,6 +175,7 @@ export function argumentText(obj, schema) {
   }
   const comps = d.components;
   if (comps.length === 0) return '';
+  const val = (c) => viewValue(obj, c);
   const byType = (t) => comps.filter((c) => c.type === t);
   // multi-condition entries (AND/OR/XOR/TARGET/PLAYER/MOUNT)
   if (comps.length === 1 && comps[0].type === 'conditions') return countText(obj[comps[0].key]?.length ?? 0, 'condition');
@@ -182,19 +183,62 @@ export function argumentText(obj, schema) {
   const nums = byType('numeric');
   if (name === 'IsEquippedType' || name === 'IsEquippedHasKeyword') {
     const first = comps[0];
-    return `${componentText(obj[first.key], first)} in ${obj['Left hand'] ? 'left' : 'right'} hand`;
+    return `${componentText(val(first), first)} in ${obj['Left hand'] ? 'left' : 'right'} hand`;
+  }
+  if (name === 'Random') {
+    const [mn, mx, , n] = [comps[1], comps[2], comps[3], comps[4]];
+    return `random(${componentText(val(mn), mn)}–${componentText(val(mx), mx)}) ${obj[cmp.key] ?? '<'} ${componentText(val(n), n)}`;
   }
   if (cmp && nums.length >= 2) {
     const a = nums[nums.length - 2];
     const b = nums[nums.length - 1];
-    return `${componentText(obj[a.key], a)} ${obj[cmp.key] ?? '=='} ${componentText(obj[b.key], b)}`;
+    return `${componentText(val(a), a)} ${obj[cmp.key] ?? '=='} ${componentText(val(b), b)}`;
   }
-  if (cmp && nums.length === 1) return `${obj[cmp.key] ?? '=='} ${componentText(obj[nums[0].key], nums[0])}`;
-  return comps.filter((c) => c.type !== 'state').map((c) => componentText(obj[c.key], c)).filter(Boolean).join(', ');
+  if (cmp && nums.length === 1) return `${obj[cmp.key] ?? '=='} ${componentText(val(nums[0]), nums[0])}`;
+  return comps.filter((c) => c.type !== 'state').map((c) => componentText(val(c), c)).filter(Boolean).join(', ');
+}
+
+// Older field layouts OAR still reads. OAR loads them into the current components (the old value wins)
+// and writes only the current keys when it saves; the editor shows them the same way and converts an
+// entry only when the user edits it.
+export const LEGACY = {
+  // before OAR 2.3.0: "Random value": { "min": 0.0, "max": 1.0 }
+  Random: {
+    key: 'Random value',
+    since: '2.3.0',
+    map: {
+      'Minimum random value': (v) => ({ value: typeof v?.min === 'number' ? v.min : 0 }),
+      'Maximum random value': (v) => ({ value: typeof v?.max === 'number' ? v.max : 1 }),
+    },
+  },
+};
+
+/** Value of a component as OAR would load it (current key, or the legacy field it replaces). */
+export function viewValue(obj, comp) {
+  const legacy = LEGACY[nameOf(obj)];
+  if (legacy && obj[legacy.key] !== undefined && legacy.map[comp.key]) return legacy.map[comp.key](obj[legacy.key]);
+  return obj[comp.key];
+}
+
+export function legacyOf(obj) {
+  const legacy = LEGACY[nameOf(obj)];
+  return legacy && obj[legacy.key] !== undefined ? legacy : null;
+}
+
+/** Rewrite a legacy entry in the current layout (what OAR does when it saves). */
+export function migrateLegacy(obj) {
+  const legacy = legacyOf(obj);
+  if (!legacy) return false;
+  const old = obj[legacy.key];
+  for (const [k, f] of Object.entries(legacy.map)) obj[k] = f(old);
+  delete obj[legacy.key];
+  return true;
 }
 
 /** Components a stored entry has that its definition doesn't know (kept as-is on save). */
 export function unknownKeys(obj, def) {
   const known = new Set([...COMMON_KEYS, ...(def?.components ?? []).map((c) => c.key)]);
+  const legacy = LEGACY[nameOf(obj)];
+  if (legacy) known.add(legacy.key);
   return Object.keys(obj).filter((k) => !known.has(k));
 }

@@ -1,0 +1,81 @@
+/* 디자인 규칙 — docs/design/full/DesignSystem.dc.html 시안의 값을 그대로 옮김.
+   라이트 테마는 나중에 같은 이름의 변수만 다시 정의한다. */
+:root {
+  color-scheme: dark;
+
+  /* 면 */
+  --bg: #121212;          /* 바탕 · 사이드바 · 제목 표시줄 */
+  --main: #191919;        /* 본문 영역 */
+  --panel: #1d1d1d;       /* 카드 · 패널 */
+  --panel-2: #1c1c1c;     /* 제목 표시줄 검색칸 · 입력 안쪽 면 */
+  --field: #222222;       /* 입력칸 */
+  --palette: #232323;     /* 통합 검색 */
+  --dialog: #242424;      /* 대화상자 */
+  --menu: #262626;        /* 메뉴 · 팝업 */
+  --selected: #2a2a2a;    /* 선택 배경 · 칩 */
+  --hover: rgba(255, 255, 255, 0.05);
+  --active: rgba(255, 255, 255, 0.08);
+  --seg-on: rgba(255, 255, 255, 0.1);
+
+  /* 선 */
+  --line-1: rgba(255, 255, 255, 0.06);
+  --line-2: rgba(255, 255, 255, 0.08);
+  --line-3: rgba(255, 255, 255, 0.1);
+  --line-4: rgba(255, 255, 255, 0.14);
+
+  /* 글자 */
+  --text: #ececec;
+  --text-strong: #f2f2f2;
+  --text-2: #cfcfcf;
+  --text-3: #a3a3a3;
+  --text-4: #8f8f8f;
+  --text-5: #7a7a7a;
+  --text-6: #6b6b6b;
+  --text-7: #5e5e5e;
+  --text-placeholder: #7c7c7c;
+  --nav-fg: #b9b9b9;
+  --row-fg: #c4c4c4;
+
+  /* 역할 색 */
+  --accent: #e8a838;
+  --accent-rgb: 232 168 56; /* 투명도를 섞을 때: rgb(var(--accent-rgb) / 0.16) */
+  --accent-hover: #f2c06a;
+  --accent-fg: #1a1306;
+  --accent-soft: rgb(var(--accent-rgb) / 0.16);
+  --accent-text: #f0c270;
+  --primary: #ececec;
+  --primary-fg: #141414;
+  --danger: #e5645a;
+  --danger-text: #f08a80;
+  --danger-soft: rgba(229, 100, 90, 0.14);
+  --danger-line: rgba(229, 100, 90, 0.35);
+  --success: #6cbf7a;
+  --success-text: #9edaa9;
+  --track: #2c2c2c;
+
+  /* 그림자 · 덮개 */
+  --shadow-menu: 0 14px 40px rgba(0, 0, 0, 0.55);
+  --shadow-dialog: 0 30px 80px rgba(0, 0, 0, 0.6);
+  --dim: rgba(0, 0, 0, 0.62);
+
+  /* 모서리 */
+  --r-xs: 6px;
+  --r-sm: 8px;
+  --r-md: 10px;
+  --r-lg: 12px;
+  --r-xl: 16px;
+  --r-2xl: 18px;
+
+  /* 글꼴 — PC에 설치된 Noto Sans KR · Noto Serif KR을 쓰고, 없으면 맑은 고딕 */
+  --font: 'Noto Sans KR', 'Segoe UI', 'Malgun Gothic', sans-serif;
+  --font-serif: 'Noto Serif KR', Georgia, serif;
+  --font-mono: 'JetBrains Mono', Consolas, monospace;
+
+  /* 레이아웃 */
+  --titlebar-h: 44px;
+  --sidebar-w: 212px;
+  --selection-bg: rgb(var(--accent-rgb) / 0.10);
+  --selection-line: rgb(var(--accent-rgb) / 0.42);
+  --control-h: 34px;
+  --detail-w: 330px;
+}

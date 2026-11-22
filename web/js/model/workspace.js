@@ -131,7 +131,8 @@ export class ReplacerMod {
     this.path = dto.path;
     this.folder = dto.folder;
     this.managerMod = dto.managerMod ?? null;
-    this.project = dto.project ?? 'character';
+    // folder names are case-insensitive on Windows ("Character" and "character" are the same project)
+    this.project = (dto.project ?? 'character').toLowerCase();
     this.problems = [];
     this.configText = dto.config ?? null;
     this.userText = dto.user ?? null;
