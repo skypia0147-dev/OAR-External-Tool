@@ -1,0 +1,3142 @@
+{
+ "source": "Open Animation Replacer + RaySense",
+ "items": [
+  {
+   "name": "AND",
+   "kind": "condition",
+   "desc": "Checks if all of the child conditions are true.",
+   "version": "1.0.0.0",
+   "components": [
+    {
+     "key": "Conditions",
+     "type": "conditions"
+    }
+   ]
+  },
+  {
+   "name": "AttackState",
+   "kind": "condition",
+   "desc": "Checks the actor's attack state.",
+   "version": "1.3.0.0",
+   "components": [
+    {
+     "key": "Comparison",
+     "type": "comparison"
+    },
+    {
+     "key": "Attack state",
+     "type": "numeric",
+     "desc": "The attack state value used in the comparison.",
+     "enum": [
+      [
+       0,
+       "None"
+      ],
+      [
+       1,
+       "Draw"
+      ],
+      [
+       2,
+       "Swing"
+      ],
+      [
+       3,
+       "Hit"
+      ],
+      [
+       4,
+       "Next attack"
+      ],
+      [
+       5,
+       "Follow through"
+      ],
+      [
+       6,
+       "Bash"
+      ],
+      [
+       7,
+       "[Unused?]"
+      ],
+      [
+       8,
+       "Bow draw"
+      ],
+      [
+       9,
+       "Bow attached"
+      ],
+      [
+       10,
+       "Bow drawn"
+      ],
+      [
+       11,
+       "Bow releasing"
+      ],
+      [
+       12,
+       "Bow released"
+      ],
+      [
+       13,
+       "Bow next attack"
+      ],
+      [
+       14,
+       "Bow follow through"
+      ],
+      [
+       15,
+       "Fire"
+      ],
+      [
+       16,
+       "Firing"
+      ],
+      [
+       17,
+       "Fired"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "name": "CastingSpell",
+   "kind": "condition",
+   "desc": "Checks if the actor is currently casting a spell with the specified casting source.",
+   "version": "3.1.0.0",
+   "components": [
+    {
+     "key": "Casting source",
+     "type": "numeric",
+     "desc": "The source of the spell being cast.",
+     "enum": [
+      [
+       0,
+       "Left hand"
+      ],
+      [
+       1,
+       "Right hand"
+      ],
+      [
+       2,
+       "Dual"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "name": "CompareValues",
+   "kind": "condition",
+   "desc": "Compares two values.",
+   "version": "1.0.0.0",
+   "components": [
+    {
+     "key": "Value A",
+     "type": "numeric"
+    },
+    {
+     "key": "Comparison",
+     "type": "comparison"
+    },
+    {
+     "key": "Value B",
+     "type": "numeric"
+    }
+   ]
+  },
+  {
+   "name": "CrimeGold",
+   "kind": "condition",
+   "desc": "Tests the actor's current crime gold against a numeric value.",
+   "version": "1.0.0.0",
+   "components": [
+    {
+     "key": "Faction",
+     "type": "form",
+     "desc": "The crime faction to check."
+    },
+    {
+     "key": "Comparison",
+     "type": "comparison"
+    },
+    {
+     "key": "Numeric value",
+     "type": "numeric"
+    }
+   ]
+  },
+  {
+   "name": "CurrentCastingType",
+   "kind": "condition",
+   "desc": "Checks if the actor's current casting type of the given casting source is the required type.",
+   "version": "1.2.0.0",
+   "components": [
+    {
+     "key": "Casting source",
+     "type": "numeric",
+     "desc": "The casting source to check."
+    },
+    {
+     "key": "Casting type",
+     "type": "numeric",
+     "desc": "The required casting type."
+    }
+   ]
+  },
+  {
+   "name": "CurrentDeliveryType",
+   "kind": "condition",
+   "desc": "Checks if the actor's current delivery type of the given casting source is the required type.",
+   "version": "1.2.0.0",
+   "components": [
+    {
+     "key": "Casting source",
+     "type": "numeric",
+     "desc": "The casting source to check."
+    },
+    {
+     "key": "Delivery type",
+     "type": "numeric",
+     "desc": "The required delivery type."
+    }
+   ]
+  },
+  {
+   "name": "CurrentFurniture",
+   "kind": "condition",
+   "desc": "Checks if the ref is currently occupying the specified furniture.",
+   "version": "1.1.0.0",
+   "components": [
+    {
+     "key": "Furniture",
+     "type": "form",
+     "desc": "The furniture form that the actor should be occupying."
+    },
+    {
+     "key": "Base",
+     "type": "bool",
+     "desc": "Enable to check the furniture base object Disable to check the current furniture ref."
+    }
+   ]
+  },
+  {
+   "name": "CurrentFurnitureHasKeyword",
+   "kind": "condition",
+   "desc": "Checks if the ref is currently occupying furniture with the specified keyword.",
+   "version": "1.1.0.0",
+   "components": [
+    {
+     "key": "Keyword",
+     "type": "keyword"
+    },
+    {
+     "key": "Base",
+     "type": "bool",
+     "desc": "Enable to check the furniture base object. Disable to check the current furniture ref."
+    }
+   ]
+  },
+  {
+   "name": "CurrentGameTime",
+   "kind": "condition",
+   "desc": "Tests the current game time against the specified time.",
+   "version": "1.0.0.0",
+   "components": [
+    {
+     "key": "Comparison",
+     "type": "comparison"
+    },
+    {
+     "key": "Numeric value",
+     "type": "numeric"
+    }
+   ]
+  },
+  {
+   "name": "CurrentMovementSpeed",
+   "kind": "condition",
+   "desc": "Tests the ref's current movement speed against a numeric value.",
+   "version": "1.0.0.0",
+   "components": [
+    {
+     "key": "Comparison",
+     "type": "comparison"
+    },
+    {
+     "key": "Numeric value",
+     "type": "numeric"
+    }
+   ]
+  },
+  {
+   "name": "CurrentPackageType",
+   "kind": "condition",
+   "desc": "Checks if the actor's current package is of a given type.",
+   "version": "3.0.0.0",
+   "components": [
+    {
+     "key": "Package type",
+     "type": "numeric",
+     "desc": "The required type of the current package.",
+     "enum": [
+      [
+       -1,
+       "None"
+      ],
+      [
+       0,
+       "Explore"
+      ],
+      [
+       1,
+       "Follow"
+      ],
+      [
+       2,
+       "Escort"
+      ],
+      [
+       3,
+       "Eat"
+      ],
+      [
+       4,
+       "Sleep"
+      ],
+      [
+       5,
+       "Wander"
+      ],
+      [
+       6,
+       "Travel"
+      ],
+      [
+       7,
+       "Accompany"
+      ],
+      [
+       8,
+       "UseItemAt"
+      ],
+      [
+       9,
+       "Ambush"
+      ],
+      [
+       10,
+       "FleeNotCombat"
+      ],
+      [
+       11,
+       "CastMagic"
+      ],
+      [
+       12,
+       "Sandbox"
+      ],
+      [
+       13,
+       "Patrol"
+      ],
+      [
+       14,
+       "Guard"
+      ],
+      [
+       15,
+       "Dialogue"
+      ],
+      [
+       16,
+       "UseWeapon"
+      ],
+      [
+       17,
+       "Find"
+      ],
+      [
+       18,
+       "Package"
+      ],
+      [
+       19,
+       "PackageTemplate"
+      ],
+      [
+       20,
+       "Activate"
+      ],
+      [
+       21,
+       "Alarm"
+      ],
+      [
+       22,
+       "Flee"
+      ],
+      [
+       23,
+       "Trespass"
+      ],
+      [
+       24,
+       "Spectator"
+      ],
+      [
+       25,
+       "ReactToDead"
+      ],
+      [
+       26,
+       "GetUpFromChairBed"
+      ],
+      [
+       27,
+       "DoNothing"
+      ],
+      [
+       28,
+       "InGameDialogue"
+      ],
+      [
+       29,
+       "Surface"
+      ],
+      [
+       30,
+       "SearchForAttacker"
+      ],
+      [
+       31,
+       "AvoidPlayer"
+      ],
+      [
+       32,
+       "ReactToDestroyedObject"
+      ],
+      [
+       33,
+       "ReactToGrenadeOrMine"
+      ],
+      [
+       34,
+       "StealWarning"
+      ],
+      [
+       35,
+       "PickPocketWarning"
+      ],
+      [
+       36,
+       "MovementBlocked"
+      ],
+      [
+       37,
+       "VampireFeed"
+      ],
+      [
+       38,
+       "Cannibal"
+      ],
+      [
+       39,
+       "Landing"
+      ],
+      [
+       40,
+       "Unused"
+      ],
+      [
+       41,
+       "MountActor"
+      ],
+      [
+       42,
+       "DismountActor"
+      ],
+      [
+       43,
+       "ClearMountPosition"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "name": "CurrentRotationSpeed",
+   "kind": "condition",
+   "desc": "Tests the ref's current rotation speed against a numeric value.",
+   "version": "1.2.0.0",
+   "components": [
+    {
+     "key": "Comparison",
+     "type": "comparison"
+    },
+    {
+     "key": "Numeric value",
+     "type": "numeric"
+    }
+   ]
+  },
+  {
+   "name": "CurrentTargetDistance",
+   "kind": "condition",
+   "desc": "Tests the distance to an actor's current target against a numeric value.",
+   "version": "1.1.0.0",
+   "components": [
+    {
+     "key": "Target type",
+     "type": "numeric",
+     "desc": "The required target type.",
+     "enum": [
+      [
+       0,
+       "Target"
+      ],
+      [
+       1,
+       "Combat target"
+      ],
+      [
+       2,
+       "Dialogue target"
+      ],
+      [
+       3,
+       "Follow target"
+      ],
+      [
+       4,
+       "Headtrack target"
+      ],
+      [
+       5,
+       "Package target"
+      ],
+      [
+       6,
+       "Any target"
+      ]
+     ]
+    },
+    {
+     "key": "Comparison",
+     "type": "comparison"
+    },
+    {
+     "key": "Numeric value",
+     "type": "numeric"
+    }
+   ]
+  },
+  {
+   "name": "CurrentTargetLineOfSight",
+   "kind": "condition",
+   "desc": "Checks if the actor's current target is in their line of sight, or if the actor is in their current target's line of sight.",
+   "version": "1.2.0.0",
+   "components": [
+    {
+     "key": "Target type",
+     "type": "numeric",
+     "desc": "The required target type.",
+     "enum": [
+      [
+       0,
+       "Target"
+      ],
+      [
+       1,
+       "Combat target"
+      ],
+      [
+       2,
+       "Dialogue target"
+      ],
+      [
+       3,
+       "Follow target"
+      ],
+      [
+       4,
+       "Headtrack target"
+      ],
+      [
+       5,
+       "Package target"
+      ],
+      [
+       6,
+       "Any target"
+      ]
+     ]
+    },
+    {
+     "key": "Evaluate target",
+     "type": "bool",
+     "desc": "Enable to check the target's line of sight to the actor. Disable to check the actor's line of sight to the target."
+    }
+   ]
+  },
+  {
+   "name": "CurrentTargetRelationship",
+   "kind": "condition",
+   "desc": "Tests the relationship between the actor and their current target against a numeric value.",
+   "version": "1.1.0.0",
+   "components": [
+    {
+     "key": "Target type",
+     "type": "numeric",
+     "desc": "The required target type.",
+     "enum": [
+      [
+       0,
+       "Target"
+      ],
+      [
+       1,
+       "Combat target"
+      ],
+      [
+       2,
+       "Dialogue target"
+      ],
+      [
+       3,
+       "Follow target"
+      ],
+      [
+       4,
+       "Headtrack target"
+      ],
+      [
+       5,
+       "Package target"
+      ],
+      [
+       6,
+       "Any target"
+      ]
+     ]
+    },
+    {
+     "key": "Comparison",
+     "type": "comparison"
+    },
+    {
+     "key": "Numeric value",
+     "type": "numeric"
+    }
+   ]
+  },
+  {
+   "name": "CurrentTargetRelativeAngle",
+   "kind": "condition",
+   "desc": "Tests the relative angle between an actor and their current target.",
+   "version": "1.2.0.0",
+   "components": [
+    {
+     "key": "Target type",
+     "type": "numeric",
+     "desc": "The required target type.",
+     "enum": [
+      [
+       0,
+       "Target"
+      ],
+      [
+       1,
+       "Combat target"
+      ],
+      [
+       2,
+       "Dialogue target"
+      ],
+      [
+       3,
+       "Follow target"
+      ],
+      [
+       4,
+       "Headtrack target"
+      ],
+      [
+       5,
+       "Package target"
+      ],
+      [
+       6,
+       "Any target"
+      ]
+     ]
+    },
+    {
+     "key": "Comparison",
+     "type": "comparison"
+    },
+    {
+     "key": "Numeric value",
+     "type": "numeric"
+    },
+    {
+     "key": "Degrees",
+     "type": "bool",
+     "desc": "Whether the angle values are in degrees or radians."
+    },
+    {
+     "key": "Absolute",
+     "type": "bool",
+     "desc": "Whether the angle values are absolute. Disable to be able to differentiate between clockwise and counterclockwise. Enable if you don't care about that, it should make the comparison easier to do in one condition."
+    }
+   ]
+  },
+  {
+   "name": "CurrentWeather",
+   "kind": "condition",
+   "desc": "Checks if the current weather is the specified weather.",
+   "version": "1.0.0.0",
+   "components": [
+    {
+     "key": "Weather",
+     "type": "form",
+     "desc": "The weather (TESWeather) or a form list of weathers (BGSListForm) that should be matched by the current weather."
+    }
+   ]
+  },
+  {
+   "name": "CurrentWeatherHasFlag",
+   "kind": "condition",
+   "desc": "Checks if the current weather has the specified flag enabled.",
+   "version": "1.2.0.0",
+   "components": [
+    {
+     "key": "Flag",
+     "type": "numeric",
+     "desc": "The current weather must have this flag enabled.",
+     "enum": [
+      [
+       0,
+       "Pleasant"
+      ],
+      [
+       1,
+       "Cloudy"
+      ],
+      [
+       2,
+       "Rainy"
+      ],
+      [
+       3,
+       "Snow"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "name": "EquippedObjectWeight",
+   "kind": "condition",
+   "desc": "Tests the weight of the object currently equipped in the right or left hand against a numeric value.",
+   "version": "1.2.0.0",
+   "components": [
+    {
+     "key": "Left hand",
+     "type": "bool",
+     "desc": "Enable to check left hand. Disable to check right hand."
+    },
+    {
+     "key": "Comparison",
+     "type": "comparison"
+    },
+    {
+     "key": "Numeric value",
+     "type": "numeric"
+    }
+   ]
+  },
+  {
+   "name": "FactionRank",
+   "kind": "condition",
+   "desc": "Tests the ref's faction rank against the specified rank.",
+   "version": "1.0.0.0",
+   "components": [
+    {
+     "key": "Faction",
+     "type": "form",
+     "desc": "The faction that should be checked."
+    },
+    {
+     "key": "Comparison",
+     "type": "comparison"
+    },
+    {
+     "key": "Numeric value",
+     "type": "numeric"
+    }
+   ]
+  },
+  {
+   "name": "FallDamage",
+   "kind": "condition",
+   "desc": "Calculates the actor's fall damage if they landed at this moment and tests it against a numeric value.",
+   "version": "1.1.0.0",
+   "components": [
+    {
+     "key": "Comparison",
+     "type": "comparison"
+    },
+    {
+     "key": "Numeric value",
+     "type": "numeric"
+    }
+   ]
+  },
+  {
+   "name": "FallDistance",
+   "kind": "condition",
+   "desc": "Gets the actor's current fall distance and tests it against a numeric value.",
+   "version": "1.1.0.0",
+   "components": [
+    {
+     "key": "Comparison",
+     "type": "comparison"
+    },
+    {
+     "key": "Numeric value",
+     "type": "numeric"
+    }
+   ]
+  },
+  {
+   "name": "HasGraphVariable",
+   "kind": "condition",
+   "desc": "Checks if the ref has the specified graph variable.",
+   "version": "1.0.0.0",
+   "components": [
+    {
+     "key": "Graph variable name",
+     "type": "text",
+     "desc": "The name of the graph variable to check."
+    },
+    {
+     "key": "Graph Variable Type",
+     "type": "numeric"
+    }
+   ]
+  },
+  {
+   "name": "HasKeyword",
+   "kind": "condition",
+   "desc": "Checks if the ref has the specified keyword.",
+   "version": "1.0.0.0",
+   "components": [
+    {
+     "key": "Keyword",
+     "type": "keyword"
+    }
+   ]
+  },
+  {
+   "name": "HasMagicEffect",
+   "kind": "condition",
+   "desc": "Checks if the ref is currently affected by the specified magic effect.",
+   "version": "1.0.0.0",
+   "components": [
+    {
+     "key": "Magic effect",
+     "type": "form",
+     "desc": "The magic effect to check."
+    },
+    {
+     "key": "Active effects only",
+     "type": "bool",
+     "desc": "Enable to check active magic effects only."
+    }
+   ]
+  },
+  {
+   "name": "HasMagicEffectWithKeyword",
+   "kind": "condition",
+   "desc": "Checks if the ref is currently affected by a magic effect that has the specified keyword.",
+   "version": "1.0.0.0",
+   "components": [
+    {
+     "key": "Keyword",
+     "type": "keyword"
+    },
+    {
+     "key": "Active effects only",
+     "type": "bool",
+     "desc": "Enable to check active magic effects only."
+    }
+   ]
+  },
+  {
+   "name": "HasPerk",
+   "kind": "condition",
+   "desc": "Checks if the ref has the specified perk.",
+   "version": "1.0.0.0",
+   "components": [
+    {
+     "key": "Perk",
+     "type": "form",
+     "desc": "The perk that the evaluated ref should have."
+    }
+   ]
+  },
+  {
+   "name": "HasRefType",
+   "kind": "condition",
+   "desc": "Checks if the ref has the specified LocRefType attached.",
+   "version": "1.0.0.0",
+   "components": [
+    {
+     "key": "Location ref type",
+     "type": "keyword",
+     "desc": "The BGSLocationRefType form that should be checked."
+    }
+   ]
+  },
+  {
+   "name": "HasSpell",
+   "kind": "condition",
+   "desc": "Checks if the ref has the specified spell or shout.",
+   "version": "1.0.0.0",
+   "components": [
+    {
+     "key": "Spell",
+     "type": "form",
+     "desc": "The spell or shout that the evaluated ref should have."
+    }
+   ]
+  },
+  {
+   "name": "HasTarget",
+   "kind": "condition",
+   "desc": "Checks if the actor has a target of a given type.",
+   "version": "1.1.0.0",
+   "components": [
+    {
+     "key": "Target type",
+     "type": "numeric",
+     "desc": "The required target type.",
+     "enum": [
+      [
+       0,
+       "Target"
+      ],
+      [
+       1,
+       "Combat target"
+      ],
+      [
+       2,
+       "Dialogue target"
+      ],
+      [
+       3,
+       "Follow target"
+      ],
+      [
+       4,
+       "Headtrack target"
+      ],
+      [
+       5,
+       "Package target"
+      ],
+      [
+       6,
+       "Any target"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Height",
+   "kind": "condition",
+   "desc": "Tests the actor's height against a numeric value.",
+   "version": "1.0.0.0",
+   "components": [
+    {
+     "key": "Comparison",
+     "type": "comparison"
+    },
+    {
+     "key": "Numeric value",
+     "type": "numeric"
+    }
+   ]
+  },
+  {
+   "name": "IdleTime",
+   "kind": "condition",
+   "desc": "Compares the time the actor has spent idling with a numeric value.",
+   "version": "2.3.0.0",
+   "components": [
+    {
+     "key": "Comparison",
+     "type": "comparison"
+    },
+    {
+     "key": "Numeric value",
+     "type": "numeric"
+    },
+    {
+     "key": "State",
+     "type": "state"
+    }
+   ]
+  },
+  {
+   "name": "InventoryCount",
+   "kind": "condition",
+   "desc": "Tests the actor's current inventory count of a specified form against a numeric value.",
+   "version": "1.1.0.0",
+   "components": [
+    {
+     "key": "Form",
+     "type": "form",
+     "desc": "The form that should be searched for in the inventory."
+    },
+    {
+     "key": "Comparison",
+     "type": "comparison"
+    },
+    {
+     "key": "Numeric value",
+     "type": "numeric",
+     "desc": "The value to compare the inventory count with."
+    }
+   ]
+  },
+  {
+   "name": "InventoryCountHasKeyword",
+   "kind": "condition",
+   "desc": "Tests the actor's current inventory count of all items with a specified keyword against a numeric value.",
+   "version": "1.2.0.0",
+   "components": [
+    {
+     "key": "Keyword",
+     "type": "keyword"
+    },
+    {
+     "key": "Comparison",
+     "type": "comparison"
+    },
+    {
+     "key": "Numeric value",
+     "type": "numeric",
+     "desc": "The value to compare the inventory count with."
+    }
+   ]
+  },
+  {
+   "name": "InventoryWeight",
+   "kind": "condition",
+   "desc": "Tests the actor's total inventory weight, or the current encumbrance percentage, against a numeric value.",
+   "version": "3.0.0.0",
+   "components": [
+    {
+     "key": "Percentage",
+     "type": "bool",
+     "desc": "Enable to check the inventory weight as a percentage of the actor's carry capacity instead of the absolute weight."
+    },
+    {
+     "key": "Comparison",
+     "type": "comparison"
+    },
+    {
+     "key": "Numeric value",
+     "type": "numeric"
+    }
+   ]
+  },
+  {
+   "name": "IsAboveWater",
+   "kind": "condition",
+   "desc": "Checks if the actor is above water - as in, if it fell straight down, it'd hit water.",
+   "version": "3.0.0.0",
+   "components": [
+    {
+     "key": "Distance",
+     "type": "numeric",
+     "desc": "Minimum distance from water surface."
+    },
+    {
+     "key": "Depth",
+     "type": "numeric",
+     "desc": "Minimum depth of the water."
+    }
+   ]
+  },
+  {
+   "name": "IsActorBase",
+   "kind": "condition",
+   "desc": "Checks if the ref's actor base form is the specified form.",
+   "version": "1.0.0.0",
+   "components": [
+    {
+     "key": "Actor base",
+     "type": "form",
+     "desc": "The actor base form that should be matched by the evaluated actor."
+    }
+   ]
+  },
+  {
+   "name": "IsAttacking",
+   "kind": "condition",
+   "desc": "Checks if the ref is attacking.",
+   "version": "1.0.0.0",
+   "components": []
+  },
+  {
+   "name": "IsAttackTypeFlag",
+   "kind": "condition",
+   "desc": "Checks if the performed attack has the specified flag enabled.",
+   "version": "2.2.0.0",
+   "components": [
+    {
+     "key": "Flag",
+     "type": "numeric",
+     "desc": "The performed attack must have this flag enabled.",
+     "enum": [
+      [
+       0,
+       "IgnoreWeapon"
+      ],
+      [
+       1,
+       "BashAttack"
+      ],
+      [
+       2,
+       "PowerAttack"
+      ],
+      [
+       3,
+       "ChargeAttack"
+      ],
+      [
+       4,
+       "RotatingAttack"
+      ],
+      [
+       5,
+       "ContinuousAttack"
+      ],
+      [
+       6,
+       "OverrideData"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "name": "IsAttackTypeKeyword",
+   "kind": "condition",
+   "desc": "Checks if the performed attack type is equal to the specified keyword.",
+   "version": "2.2.0.0",
+   "components": [
+    {
+     "key": "Keyword",
+     "type": "keyword"
+    }
+   ]
+  },
+  {
+   "name": "IsBeingRidden",
+   "kind": "condition",
+   "desc": "Checks if the ref is currently mounted by someone.",
+   "version": "1.1.0.0",
+   "components": []
+  },
+  {
+   "name": "IsBeingRiddenBy",
+   "kind": "condition",
+   "desc": "Checks if the ref is currently mounted by the specified form.",
+   "version": "1.1.0.0",
+   "components": [
+    {
+     "key": "Mount",
+     "type": "form",
+     "desc": "The form that the actor should be riding."
+    },
+    {
+     "key": "Base",
+     "type": "bool",
+     "desc": "Enable to check the rider's base actor."
+    }
+   ]
+  },
+  {
+   "name": "IsBlocking",
+   "kind": "condition",
+   "desc": "Checks if the ref is blocking.",
+   "version": "1.1.0.0",
+   "components": []
+  },
+  {
+   "name": "IsChild",
+   "kind": "condition",
+   "desc": "Checks if the ref is a child.",
+   "version": "1.0.0.0",
+   "components": []
+  },
+  {
+   "name": "IsClass",
+   "kind": "condition",
+   "desc": "Checks if the ref's class is the specified class.",
+   "version": "1.0.0.0",
+   "components": [
+    {
+     "key": "Class",
+     "type": "form",
+     "desc": "The class that should be matched by the evaluated actor."
+    }
+   ]
+  },
+  {
+   "name": "IsCombatSearching",
+   "kind": "condition",
+   "desc": "Checks if the ref is searching for a target in combat.",
+   "version": "2.3.0.0",
+   "components": []
+  },
+  {
+   "name": "IsCombatState",
+   "kind": "condition",
+   "desc": "Checks if the ref's current combat state matches the given state.",
+   "version": "1.1.0.0",
+   "components": [
+    {
+     "key": "Combat state",
+     "type": "numeric",
+     "desc": "The required combat state.",
+     "enum": [
+      [
+       0,
+       "Not in combat"
+      ],
+      [
+       1,
+       "In combat "
+      ],
+      [
+       2,
+       "Searching"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "name": "IsCombatStyle",
+   "kind": "condition",
+   "desc": "Checks if the ref's combat style is the specified combat style.",
+   "version": "1.0.0.0",
+   "components": [
+    {
+     "key": "Combat style",
+     "type": "form",
+     "desc": "The combat style that should be matched by the evaluated actor."
+    }
+   ]
+  },
+  {
+   "name": "IsCrimeSearching",
+   "kind": "condition",
+   "desc": "Checks if the ref is searching for a criminal.",
+   "version": "2.3.0.0",
+   "components": []
+  },
+  {
+   "name": "IsCurrentPackage",
+   "kind": "condition",
+   "desc": "Checks if the ref's currently running the specified package.",
+   "version": "1.0.0.0",
+   "components": [
+    {
+     "key": "Package",
+     "type": "form",
+     "desc": "The package that should be matched by the evaluated actor's current package."
+    }
+   ]
+  },
+  {
+   "name": "IsDoingFavor",
+   "kind": "condition",
+   "desc": "Checks if the ref has been asked to do something by the player.",
+   "version": "1.2.0.0",
+   "components": []
+  },
+  {
+   "name": "IsEquipped",
+   "kind": "condition",
+   "desc": "Checks if the ref has the specified form equipped in the right or left hand.",
+   "version": "1.0.0.0",
+   "components": [
+    {
+     "key": "Form",
+     "type": "form",
+     "desc": "The form that should be equipped."
+    },
+    {
+     "key": "Left hand",
+     "type": "bool",
+     "desc": "Enable to check left hand. Disable to check right hand."
+    }
+   ]
+  },
+  {
+   "name": "IsEquippedHasEnchantment",
+   "kind": "condition",
+   "desc": "Checks if the ref has an item equipped in the right or left hand that has the specified enchantment.",
+   "version": "2.2.0.0",
+   "components": [
+    {
+     "key": "Enchantment",
+     "type": "form",
+     "desc": "The enchantment to check."
+    },
+    {
+     "key": "Left hand",
+     "type": "bool",
+     "desc": "Enable to check left hand. Disable to check right hand."
+    },
+    {
+     "key": "Charged",
+     "type": "bool",
+     "desc": "Enable to check if the enchantment has enough charge."
+    }
+   ]
+  },
+  {
+   "name": "IsEquippedHasEnchantmentWithKeyword",
+   "kind": "condition",
+   "desc": "Checks if the ref has an item equipped in the right or left hand that has an enchantment with the specified keyword.",
+   "version": "2.2.0.0",
+   "components": [
+    {
+     "key": "Keyword",
+     "type": "keyword"
+    },
+    {
+     "key": "Left hand",
+     "type": "bool",
+     "desc": "Enable to check left hand. Disable to check right hand."
+    },
+    {
+     "key": "Charged",
+     "type": "bool",
+     "desc": "Enable to check if the enchantment has enough charge."
+    }
+   ]
+  },
+  {
+   "name": "IsEquippedHasKeyword",
+   "kind": "condition",
+   "desc": "Checks if the ref has an item equipped in the right or left hand that has the specified keyword.",
+   "version": "1.0.0.0",
+   "components": [
+    {
+     "key": "Keyword",
+     "type": "keyword"
+    },
+    {
+     "key": "Left hand",
+     "type": "bool",
+     "desc": "Enable to check left hand. Disable to check right hand."
+    }
+   ]
+  },
+  {
+   "name": "IsEquippedPower",
+   "kind": "condition",
+   "desc": "Checks if the ref has the specified spell equipped in the power slot.",
+   "version": "1.0.0.0",
+   "components": [
+    {
+     "key": "Power",
+     "type": "form",
+     "desc": "The power that should be matched by the equipped one."
+    }
+   ]
+  },
+  {
+   "name": "IsEquippedShout",
+   "kind": "condition",
+   "desc": "Checks if the ref has the specified shout equipped.",
+   "version": "1.0.0.0",
+   "components": [
+    {
+     "key": "Shout",
+     "type": "form",
+     "desc": "The shout that should be matched by the equipped one."
+    }
+   ]
+  },
+  {
+   "name": "IsEquippedType",
+   "kind": "condition",
+   "desc": "Checks if the ref has an item of the specified type equipped in the right or left hand.",
+   "version": "1.0.0.0",
+   "components": [
+    {
+     "key": "Type",
+     "type": "numeric",
+     "desc": "The type that should be equipped in the right or left hand.",
+     "enum": [
+      [
+       -1,
+       "Other"
+      ],
+      [
+       0,
+       "Unarmed"
+      ],
+      [
+       1,
+       "Sword"
+      ],
+      [
+       2,
+       "Dagger"
+      ],
+      [
+       3,
+       "War Axe"
+      ],
+      [
+       4,
+       "Mace"
+      ],
+      [
+       5,
+       "Greatsword"
+      ],
+      [
+       6,
+       "Battleaxe"
+      ],
+      [
+       7,
+       "Bow"
+      ],
+      [
+       8,
+       "Staff"
+      ],
+      [
+       9,
+       "Crossbow"
+      ],
+      [
+       10,
+       "Warhammer"
+      ],
+      [
+       11,
+       "Shield"
+      ],
+      [
+       12,
+       "Alteration Spell"
+      ],
+      [
+       13,
+       "Illusion Spell"
+      ],
+      [
+       14,
+       "Destruction Spell"
+      ],
+      [
+       15,
+       "Conjuration Spell"
+      ],
+      [
+       16,
+       "Restoration Spell"
+      ],
+      [
+       17,
+       "Scroll"
+      ],
+      [
+       18,
+       "Torch"
+      ]
+     ]
+    },
+    {
+     "key": "Left hand",
+     "type": "bool",
+     "desc": "Enable to check left hand. Disable to check right hand."
+    }
+   ]
+  },
+  {
+   "name": "IsFemale",
+   "kind": "condition",
+   "desc": "Checks if the ref is female.",
+   "version": "1.0.0.0",
+   "components": []
+  },
+  {
+   "name": "IsForm",
+   "kind": "condition",
+   "desc": "Checks if the ref matches the specified form.",
+   "version": "1.0.0.0",
+   "components": [
+    {
+     "key": "Form",
+     "type": "form"
+    }
+   ]
+  },
+  {
+   "name": "IsGhost",
+   "kind": "condition",
+   "desc": "Checks if the ref is in the ghost (invulnerable) state. Not related to in-game ghosts.",
+   "version": "3.0.0.0",
+   "components": []
+  },
+  {
+   "name": "IsGreetingPlayer",
+   "kind": "condition",
+   "desc": "Checks if the ref is greeting the player.",
+   "version": "1.2.0.0",
+   "components": []
+  },
+  {
+   "name": "IsGuard",
+   "kind": "condition",
+   "desc": "Checks if the ref is a guard.",
+   "version": "2.3.0.0",
+   "components": []
+  },
+  {
+   "name": "IsInAir",
+   "kind": "condition",
+   "desc": "Checks if the ref is in the air.",
+   "version": "1.0.0.0",
+   "components": []
+  },
+  {
+   "name": "IsInCombat",
+   "kind": "condition",
+   "desc": "Checks if the ref is in combat.",
+   "version": "1.0.0.0",
+   "components": []
+  },
+  {
+   "name": "IsInFaction",
+   "kind": "condition",
+   "desc": "Checks if the ref is in the specified faction.",
+   "version": "1.0.0.0",
+   "components": [
+    {
+     "key": "Faction",
+     "type": "form",
+     "desc": "The faction that the evaluated actor should be a member of."
+    }
+   ]
+  },
+  {
+   "name": "IsInInterior",
+   "kind": "condition",
+   "desc": "Checks if the ref is in an interior cell.",
+   "version": "1.0.0.0",
+   "components": []
+  },
+  {
+   "name": "IsInLocation",
+   "kind": "condition",
+   "desc": "Checks if the ref is in the specified location.",
+   "version": "1.0.0.0",
+   "components": [
+    {
+     "key": "Location",
+     "type": "form",
+     "desc": "The location that the evaluated ref should be in."
+    }
+   ]
+  },
+  {
+   "name": "IsInScene",
+   "kind": "condition",
+   "desc": "Checks if the ref is currently in a scene.",
+   "version": "1.2.0.0",
+   "components": []
+  },
+  {
+   "name": "IsInSpecifiedScene",
+   "kind": "condition",
+   "desc": "Checks if the ref is currently in the specified scene.",
+   "version": "1.2.0.0",
+   "components": [
+    {
+     "key": "Scene",
+     "type": "form",
+     "desc": "The scene to check."
+    }
+   ]
+  },
+  {
+   "name": "IsMenuOpen",
+   "kind": "condition",
+   "desc": "Checks if a specific menu is currently open.",
+   "version": "1.3.0.0",
+   "components": [
+    {
+     "key": "Menu name",
+     "type": "text",
+     "desc": "The menu name that should be open.\n\nKnown names:\nConsole\nConsole Native UI Menu\nContainerMenu\nCrafting Menu\nCreation Club Menu\nCredits Menu\nCursor Menu\nDialogue Menu\nFader Menu\nFavoritesMenu\nGiftMenu\nHUD Menu\nInventoryMenu\nJournal Menu\nKinect Menu\nLevelUp Menu\nLoading Menu\nLoadWaitSpinner\nLockpicking Menu\nMagicMenu\nMain Menu\nMapMenu\nMessageBoxMenu\nMist Menu\nMod Manager Menu\nRaceSex Menu\nSafeZoneMenu\nSleep/Wait Menu\nStatsMenu\nTitleSequence Menu\nTraining Menu\nTutorial Menu\nTweenMenu"
+    }
+   ]
+  },
+  {
+   "name": "IsMovementDirection",
+   "kind": "condition",
+   "desc": "Checks if the ref is moving in the specified direction.",
+   "version": "1.0.0.0",
+   "components": [
+    {
+     "key": "Direction",
+     "type": "numeric",
+     "desc": "The direction that the ref should be moving in.",
+     "enum": [
+      [
+       0,
+       "None"
+      ],
+      [
+       1,
+       "Forward"
+      ],
+      [
+       2,
+       "Right"
+      ],
+      [
+       3,
+       "Back"
+      ],
+      [
+       4,
+       "Left"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "name": "IsOnMount",
+   "kind": "condition",
+   "desc": "Checks if the ref is riding a mount.",
+   "version": "1.1.0.0",
+   "components": []
+  },
+  {
+   "name": "IsOnStairs",
+   "kind": "condition",
+   "desc": "Checks if the ref is on stairs. Keep in mind that not all stairs in the game are marked as such.",
+   "version": "2.3.0.0",
+   "components": []
+  },
+  {
+   "name": "IsOverEncumbered",
+   "kind": "condition",
+   "desc": "Checks if the ref is over-encumbered.",
+   "version": "2.3.0.0",
+   "components": []
+  },
+  {
+   "name": "IsParentCell",
+   "kind": "condition",
+   "desc": "Checks if the ref is currently in the specified cell.",
+   "version": "1.0.0.0",
+   "components": [
+    {
+     "key": "Cell",
+     "type": "form",
+     "desc": "The cell that the evaluated ref should be in."
+    }
+   ]
+  },
+  {
+   "name": "IsPlayerTeammate",
+   "kind": "condition",
+   "desc": "Checks if the ref is a teammate of the player.",
+   "version": "1.0.0.0",
+   "components": []
+  },
+  {
+   "name": "IsQuestStageDone",
+   "kind": "condition",
+   "desc": "Checks if the specified stage in the given quest has been completed.",
+   "version": "1.2.0.0",
+   "components": [
+    {
+     "key": "Quest form",
+     "type": "form",
+     "desc": "The quest to check."
+    },
+    {
+     "key": "Stage index",
+     "type": "numeric",
+     "desc": "The quest stage index that should be completed for the given quest."
+    }
+   ]
+  },
+  {
+   "name": "IsRace",
+   "kind": "condition",
+   "desc": "Checks if the ref's race is the specified race.",
+   "version": "1.0.0.0",
+   "components": [
+    {
+     "key": "Race",
+     "type": "form",
+     "desc": "The race that should be matched by the evaluated actor."
+    }
+   ]
+  },
+  {
+   "name": "IsReplacerEnabled",
+   "kind": "condition",
+   "desc": "Checks if there's a replacer submod enabled with the given name. Leave the submod name empty to check if any submods are enabled in the replacer mod.",
+   "version": "1.0.0.0",
+   "components": [
+    {
+     "key": "Replacer mod name",
+     "type": "text",
+     "desc": "The name of the replacer mod to check."
+    },
+    {
+     "key": "Submod name",
+     "type": "text",
+     "desc": "If empty, any enabled submods of the replacer mod specified above will match the condition."
+    }
+   ]
+  },
+  {
+   "name": "IsRiding",
+   "kind": "condition",
+   "desc": "Checks if the ref is riding the specified form.",
+   "version": "1.1.0.0",
+   "components": [
+    {
+     "key": "Mount",
+     "type": "form",
+     "desc": "The form that the actor should be riding."
+    },
+    {
+     "key": "Base",
+     "type": "bool",
+     "desc": "Enable to check the mount's base actor."
+    }
+   ]
+  },
+  {
+   "name": "IsRidingHasKeyword",
+   "kind": "condition",
+   "desc": "Checks if the ref is riding a form with the specified keyword.",
+   "version": "1.1.0.0",
+   "components": [
+    {
+     "key": "Keyword",
+     "type": "keyword"
+    }
+   ]
+  },
+  {
+   "name": "IsRunning",
+   "kind": "condition",
+   "desc": "Checks if the ref is running.",
+   "version": "1.0.0.0",
+   "components": []
+  },
+  {
+   "name": "IsScenePlaying",
+   "kind": "condition",
+   "desc": "Checks if a specific scene is currently playing.",
+   "version": "1.2.0.0",
+   "components": [
+    {
+     "key": "Scene",
+     "type": "form",
+     "desc": "The scene to check."
+    }
+   ]
+  },
+  {
+   "name": "IsSneaking",
+   "kind": "condition",
+   "desc": "Checks if the ref is sneaking.",
+   "version": "1.0.0.0",
+   "components": []
+  },
+  {
+   "name": "IsSprinting",
+   "kind": "condition",
+   "desc": "Checks if the ref is sprinting.",
+   "version": "1.0.0.0",
+   "components": []
+  },
+  {
+   "name": "IsStaggered",
+   "kind": "condition",
+   "desc": "Checks if the actor is staggered.",
+   "version": "3.1.0.0",
+   "components": []
+  },
+  {
+   "name": "IsSummoned",
+   "kind": "condition",
+   "desc": "Checks if the ref is a summoned creature.",
+   "version": "2.2.0.0",
+   "components": []
+  },
+  {
+   "name": "IsSwimming",
+   "kind": "condition",
+   "desc": "Checks if the actor is swimming.",
+   "version": "3.0.0.0",
+   "components": []
+  },
+  {
+   "name": "IsTalking",
+   "kind": "condition",
+   "desc": "Checks if the ref is talking either in monologue or in dialogue.",
+   "version": "1.2.0.0",
+   "components": []
+  },
+  {
+   "name": "IsTrespassing",
+   "kind": "condition",
+   "desc": "Checks if the ref is trespassing.",
+   "version": "2.3.0.0",
+   "components": []
+  },
+  {
+   "name": "IsUnique",
+   "kind": "condition",
+   "desc": "Checks if the ref is flagged as unique.",
+   "version": "1.0.0.0",
+   "components": []
+  },
+  {
+   "name": "IsVoiceType",
+   "kind": "condition",
+   "desc": "Checks if the ref's voice type is the specified voice type.",
+   "version": "1.0.0.0",
+   "components": [
+    {
+     "key": "Voice type",
+     "type": "form",
+     "desc": "The voice type that should be matched by the evaluated actor."
+    }
+   ]
+  },
+  {
+   "name": "IsWeaponDrawn",
+   "kind": "condition",
+   "desc": "Checks if the ref has a weapon drawn.",
+   "version": "1.0.0.0",
+   "components": []
+  },
+  {
+   "name": "IsWorldSpace",
+   "kind": "condition",
+   "desc": "Checks if the ref is currently in the specified worldspace.",
+   "version": "1.0.0.0",
+   "components": [
+    {
+     "key": "Worldspace",
+     "type": "form",
+     "desc": "The worldspace that the evaluated ref should be in."
+    }
+   ]
+  },
+  {
+   "name": "IsWorn",
+   "kind": "condition",
+   "desc": "Checks if the ref has the specified form equipped in any slot.",
+   "version": "1.0.0.0",
+   "components": [
+    {
+     "key": "Form",
+     "type": "form",
+     "desc": "The form that should be worn."
+    }
+   ]
+  },
+  {
+   "name": "IsWornHasKeyword",
+   "kind": "condition",
+   "desc": "Checks if the ref has an item equipped in any slot that has the specified keyword.",
+   "version": "1.0.0.0",
+   "components": [
+    {
+     "key": "Keyword",
+     "type": "keyword"
+    }
+   ]
+  },
+  {
+   "name": "IsWornInSlot",
+   "kind": "condition",
+   "desc": "Checks if the ref has an item worn in the specified slot.",
+   "version": "3.0.0.0",
+   "components": [
+    {
+     "key": "Slot",
+     "type": "numeric",
+     "desc": "The slot that should be checked.",
+     "enum": [
+      [
+       0,
+       "Head"
+      ],
+      [
+       1,
+       "Hair"
+      ],
+      [
+       2,
+       "Body"
+      ],
+      [
+       3,
+       "Hands"
+      ],
+      [
+       4,
+       "Forearms"
+      ],
+      [
+       5,
+       "Amulet"
+      ],
+      [
+       6,
+       "Ring"
+      ],
+      [
+       7,
+       "Feet"
+      ],
+      [
+       8,
+       "Calves"
+      ],
+      [
+       9,
+       "Shield"
+      ],
+      [
+       10,
+       "Tail"
+      ],
+      [
+       11,
+       "LongHair"
+      ],
+      [
+       12,
+       "Circlet"
+      ],
+      [
+       13,
+       "Ears"
+      ],
+      [
+       14,
+       "ModMouth"
+      ],
+      [
+       15,
+       "ModNeck"
+      ],
+      [
+       16,
+       "ModChestPrimary"
+      ],
+      [
+       17,
+       "ModBack"
+      ],
+      [
+       18,
+       "ModMisc1"
+      ],
+      [
+       19,
+       "ModPelvisPrimary"
+      ],
+      [
+       20,
+       "DecapitateHead"
+      ],
+      [
+       21,
+       "Decapitate"
+      ],
+      [
+       22,
+       "ModPelvisSecondary"
+      ],
+      [
+       23,
+       "ModLegRight"
+      ],
+      [
+       24,
+       "ModLegLeft"
+      ],
+      [
+       25,
+       "ModFaceJewelry"
+      ],
+      [
+       26,
+       "ModChestSecondary"
+      ],
+      [
+       27,
+       "ModShoulder"
+      ],
+      [
+       28,
+       "ModArmLeft"
+      ],
+      [
+       29,
+       "ModArmRight"
+      ],
+      [
+       30,
+       "ModMisc2"
+      ],
+      [
+       31,
+       "FX01"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "name": "IsWornInSlotHasKeyword",
+   "kind": "condition",
+   "desc": "Checks if the ref has an item worn in the specified slot that has the specified keyword.",
+   "version": "1.0.0.0",
+   "components": [
+    {
+     "key": "Slot",
+     "type": "numeric",
+     "desc": "The slot that should be checked.",
+     "enum": [
+      [
+       0,
+       "Head"
+      ],
+      [
+       1,
+       "Hair"
+      ],
+      [
+       2,
+       "Body"
+      ],
+      [
+       3,
+       "Hands"
+      ],
+      [
+       4,
+       "Forearms"
+      ],
+      [
+       5,
+       "Amulet"
+      ],
+      [
+       6,
+       "Ring"
+      ],
+      [
+       7,
+       "Feet"
+      ],
+      [
+       8,
+       "Calves"
+      ],
+      [
+       9,
+       "Shield"
+      ],
+      [
+       10,
+       "Tail"
+      ],
+      [
+       11,
+       "LongHair"
+      ],
+      [
+       12,
+       "Circlet"
+      ],
+      [
+       13,
+       "Ears"
+      ],
+      [
+       14,
+       "ModMouth"
+      ],
+      [
+       15,
+       "ModNeck"
+      ],
+      [
+       16,
+       "ModChestPrimary"
+      ],
+      [
+       17,
+       "ModBack"
+      ],
+      [
+       18,
+       "ModMisc1"
+      ],
+      [
+       19,
+       "ModPelvisPrimary"
+      ],
+      [
+       20,
+       "DecapitateHead"
+      ],
+      [
+       21,
+       "Decapitate"
+      ],
+      [
+       22,
+       "ModPelvisSecondary"
+      ],
+      [
+       23,
+       "ModLegRight"
+      ],
+      [
+       24,
+       "ModLegLeft"
+      ],
+      [
+       25,
+       "ModFaceJewelry"
+      ],
+      [
+       26,
+       "ModChestSecondary"
+      ],
+      [
+       27,
+       "ModShoulder"
+      ],
+      [
+       28,
+       "ModArmLeft"
+      ],
+      [
+       29,
+       "ModArmRight"
+      ],
+      [
+       30,
+       "ModMisc2"
+      ],
+      [
+       31,
+       "FX01"
+      ]
+     ]
+    },
+    {
+     "key": "Keyword",
+     "type": "keyword"
+    }
+   ]
+  },
+  {
+   "name": "Level",
+   "kind": "condition",
+   "desc": "Tests the actor's level against the specified value.",
+   "version": "1.0.0.0",
+   "components": [
+    {
+     "key": "Comparison",
+     "type": "comparison"
+    },
+    {
+     "key": "Numeric value",
+     "type": "numeric"
+    }
+   ]
+  },
+  {
+   "name": "LifeState",
+   "kind": "condition",
+   "desc": "Checks the actor's life state.",
+   "version": "2.1.0.0",
+   "components": [
+    {
+     "key": "Comparison",
+     "type": "comparison"
+    },
+    {
+     "key": "Life state",
+     "type": "numeric",
+     "desc": "The actor life state value used in the comparison.",
+     "enum": [
+      [
+       0,
+       "Alive"
+      ],
+      [
+       1,
+       "Dying"
+      ],
+      [
+       2,
+       "Dead"
+      ],
+      [
+       3,
+       "Unconscious"
+      ],
+      [
+       4,
+       "Reanimate"
+      ],
+      [
+       5,
+       "Recycle"
+      ],
+      [
+       6,
+       "Restrained"
+      ],
+      [
+       7,
+       "Essential down"
+      ],
+      [
+       8,
+       "Bleedout"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "name": "LightLevel",
+   "kind": "condition",
+   "desc": "Tests the current strength of lighting on this ref against the specified value.",
+   "version": "2.0.0.0",
+   "components": [
+    {
+     "key": "Comparison",
+     "type": "comparison"
+    },
+    {
+     "key": "Numeric value",
+     "type": "numeric"
+    }
+   ]
+  },
+  {
+   "name": "LocationCleared",
+   "kind": "condition",
+   "desc": "Checks if the current location is cleared.",
+   "version": "2.2.0.0",
+   "components": []
+  },
+  {
+   "name": "LocationHasKeyword",
+   "kind": "condition",
+   "desc": "Checks if the current location has the specified keyword.",
+   "version": "2.0.0.0",
+   "components": [
+    {
+     "key": "Keyword",
+     "type": "keyword"
+    }
+   ]
+  },
+  {
+   "name": "MagicEffectElapsedTime",
+   "kind": "condition",
+   "desc": "Compares the time the ref has been affected by the specified magic effect with a numeric value.",
+   "version": "3.0.0.0",
+   "components": [
+    {
+     "key": "Magic effect",
+     "type": "form",
+     "desc": "The magic effect to check."
+    },
+    {
+     "key": "Active effects only",
+     "type": "bool",
+     "desc": "Enable to check active magic effects only."
+    },
+    {
+     "key": "Comparison",
+     "type": "comparison"
+    },
+    {
+     "key": "Numeric value",
+     "type": "numeric"
+    }
+   ]
+  },
+  {
+   "name": "MOUNT",
+   "kind": "condition",
+   "desc": "Checks if all of the child conditions are true, but evaluates them for the mount instead.",
+   "version": "2.2.0.0",
+   "components": [
+    {
+     "key": "Conditions",
+     "type": "conditions"
+    }
+   ]
+  },
+  {
+   "name": "MovementSpeed",
+   "kind": "condition",
+   "desc": "Tests the ref's movement speed of a given type against a numeric value.",
+   "version": "1.0.0.0",
+   "components": [
+    {
+     "key": "Movement type",
+     "type": "numeric",
+     "desc": "The movement type whose speed should be read.",
+     "enum": [
+      [
+       0,
+       "Run"
+      ],
+      [
+       1,
+       "Jog"
+      ],
+      [
+       2,
+       "Fast walk"
+      ],
+      [
+       3,
+       "Walk"
+      ]
+     ]
+    },
+    {
+     "key": "Comparison",
+     "type": "comparison"
+    },
+    {
+     "key": "Numeric value",
+     "type": "numeric"
+    }
+   ]
+  },
+  {
+   "name": "MovementSurfaceAngle",
+   "kind": "condition",
+   "desc": "Tests the angle of the surface that the ref is walking on against a numeric value.\nThe angle is calculated by comparing the surface's normal vector and the ref's forward vector.",
+   "version": "2.3.0.0",
+   "components": [
+    {
+     "key": "Comparison",
+     "type": "comparison"
+    },
+    {
+     "key": "Numeric value",
+     "type": "numeric"
+    },
+    {
+     "key": "Degrees",
+     "type": "bool",
+     "desc": "Whether the angle values are in degrees or radians."
+    },
+    {
+     "key": "Use Navmesh",
+     "type": "bool",
+     "desc": "Enable to try to access the navmesh first to calculate the surface's normal vector, if possible. Will be more inaccurate, but less volatile."
+    },
+    {
+     "key": "State",
+     "type": "state"
+    },
+    {
+     "key": "Smoothing factor",
+     "type": "numeric",
+     "desc": "The smoothing factor controls how much the previous value influences the new value.\n\nA factor closer to 0 means the smoothing will respond more slowly to changes, while a factor closer to 1 means it will respond more quickly. 1 is effectively instant."
+    }
+   ]
+  },
+  {
+   "name": "OR",
+   "kind": "condition",
+   "desc": "Checks if any of the child conditions are true.",
+   "version": "1.0.0.0",
+   "components": [
+    {
+     "key": "Conditions",
+     "type": "conditions"
+    }
+   ]
+  },
+  {
+   "name": "PLAYER",
+   "kind": "condition",
+   "desc": "Checks if all of the child conditions are true, but evaluates them for the player instead.",
+   "version": "1.3.0.0",
+   "components": [
+    {
+     "key": "Conditions",
+     "type": "conditions"
+    }
+   ]
+  },
+  {
+   "name": "PRESET",
+   "kind": "condition",
+   "desc": "Evaluate a condition preset defined in the replacer mod in place of this condition. Useful if you want to reuse the same set of conditions in multiple submods.\n\nManage condition presets in the replacer mod and don't forget to save the config!",
+   "version": "2.2.0.0",
+   "components": [
+    {
+     "key": "Preset",
+     "type": "preset"
+    }
+   ]
+  },
+  {
+   "name": "Random",
+   "kind": "condition",
+   "desc": "Compares a random value with a numeric value.",
+   "version": "2.3.0.0",
+   "components": [
+    {
+     "key": "State",
+     "type": "state"
+    },
+    {
+     "key": "Minimum random value",
+     "type": "numeric"
+    },
+    {
+     "key": "Maximum random value",
+     "type": "numeric"
+    },
+    {
+     "key": "Comparison",
+     "type": "comparison"
+    },
+    {
+     "key": "Numeric value",
+     "type": "numeric"
+    }
+   ]
+  },
+  {
+   "name": "Scale",
+   "kind": "condition",
+   "desc": "Tests the ref's scale against a numeric value.",
+   "version": "1.0.0.0",
+   "components": [
+    {
+     "key": "Comparison",
+     "type": "comparison"
+    },
+    {
+     "key": "Numeric value",
+     "type": "numeric"
+    }
+   ]
+  },
+  {
+   "name": "SitSleepState",
+   "kind": "condition",
+   "desc": "Checks the actor's sit/sleep state.",
+   "version": "2.1.0.0",
+   "components": [
+    {
+     "key": "Comparison",
+     "type": "comparison"
+    },
+    {
+     "key": "Sit/Sleep state",
+     "type": "numeric",
+     "desc": "The actor sit/sleep state value used in the comparison.",
+     "enum": [
+      [
+       0,
+       "Normal"
+      ],
+      [
+       1,
+       "Wants to sit"
+      ],
+      [
+       2,
+       "Waiting for sit anim"
+      ],
+      [
+       3,
+       "Sitting/Riding mount"
+      ],
+      [
+       4,
+       "Wants to stand"
+      ],
+      [
+       5,
+       "Wants to sleep"
+      ],
+      [
+       6,
+       "Waiting for sleep anim"
+      ],
+      [
+       7,
+       "Sleeping"
+      ],
+      [
+       8,
+       "Wants to wake"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "name": "SubmergeLevel",
+   "kind": "condition",
+   "desc": "Tests the ref's water submerge level (0-1) against a numeric value.",
+   "version": "1.0.0.0",
+   "components": [
+    {
+     "key": "Comparison",
+     "type": "comparison"
+    },
+    {
+     "key": "Numeric value",
+     "type": "numeric"
+    }
+   ]
+  },
+  {
+   "name": "SurfaceMaterial",
+   "kind": "condition",
+   "desc": "Checks if the surface the ref is standing on has a specified material ID.",
+   "version": "2.3.0.0",
+   "components": [
+    {
+     "key": "Material ID",
+     "type": "numeric",
+     "desc": "The surface has to have this material ID."
+    }
+   ]
+  },
+  {
+   "name": "TARGET",
+   "kind": "condition",
+   "desc": "Checks if all of the child conditions are true, but evaluates them for the current target instead.",
+   "version": "1.3.0.0",
+   "components": [
+    {
+     "key": "Target type",
+     "type": "numeric",
+     "desc": "The required target type.",
+     "enum": [
+      [
+       0,
+       "Target"
+      ],
+      [
+       1,
+       "Combat target"
+      ],
+      [
+       2,
+       "Dialogue target"
+      ],
+      [
+       3,
+       "Follow target"
+      ],
+      [
+       4,
+       "Headtrack target"
+      ],
+      [
+       5,
+       "Package target"
+      ],
+      [
+       6,
+       "Any target"
+      ]
+     ]
+    },
+    {
+     "key": "Conditions",
+     "type": "conditions"
+    }
+   ]
+  },
+  {
+   "name": "Weight",
+   "kind": "condition",
+   "desc": "Tests the actor's weight against a numeric value.",
+   "version": "1.0.0.0",
+   "components": [
+    {
+     "key": "Comparison",
+     "type": "comparison"
+    },
+    {
+     "key": "Numeric value",
+     "type": "numeric"
+    }
+   ]
+  },
+  {
+   "name": "WindAngleDifference",
+   "kind": "condition",
+   "desc": "Tests the difference between current weather's wind angle and the ref's angle against a numeric value.",
+   "version": "1.0.0.0",
+   "components": [
+    {
+     "key": "Comparison",
+     "type": "comparison"
+    },
+    {
+     "key": "Numeric value",
+     "type": "numeric"
+    },
+    {
+     "key": "Degrees",
+     "type": "bool",
+     "desc": "Whether the angle values are in degrees or radians."
+    },
+    {
+     "key": "Absolute",
+     "type": "bool",
+     "desc": "Whether the angle values are absolute. Disable to be able to differentiate between clockwise and counterclockwise. Enable if you don't care about that, it should make the comparison easier to do in one condition."
+    }
+   ]
+  },
+  {
+   "name": "WindSpeed",
+   "kind": "condition",
+   "desc": "Tests the current weather's wind speed against a numeric value.",
+   "version": "1.0.0.0",
+   "components": [
+    {
+     "key": "Comparison",
+     "type": "comparison"
+    },
+    {
+     "key": "Numeric value",
+     "type": "numeric"
+    }
+   ]
+  },
+  {
+   "name": "XOR",
+   "kind": "condition",
+   "desc": "Checks if only one of the child conditions is true (Exclusive OR).",
+   "version": "2.1.0.0",
+   "components": [
+    {
+     "key": "Conditions",
+     "type": "conditions"
+    }
+   ]
+  },
+  {
+   "name": "RaySense_Ledge",
+   "kind": "condition",
+   "desc": "Height of what is in front, upward (0:Height, 1:Dist, 2:Depth, ",
+   "version": "1.0.0.0",
+   "components": [
+    {
+     "key": "Sensor(0:Height, 1:Dist, 2:Depth, 3:Type)",
+     "type": "numeric"
+    },
+    {
+     "key": "Comparison",
+     "type": "comparison"
+    },
+    {
+     "key": "Value",
+     "type": "numeric"
+    }
+   ],
+   "plugin": "Open Animation Replacer - RaySense"
+  },
+  {
+   "name": "RaySense_Obstacle",
+   "kind": "condition",
+   "desc": "Check obstacle (0-2:Front/L/R Type, 3:Vault Dist).",
+   "version": "1.0.0.0",
+   "components": [
+    {
+     "key": "Sensor(0:Fnd, 1:Lnd, 2:Rnd, 3:VaultDist)",
+     "type": "numeric"
+    },
+    {
+     "key": "Comparison",
+     "type": "comparison"
+    },
+    {
+     "key": "Value",
+     "type": "numeric"
+    }
+   ],
+   "plugin": "Open Animation Replacer - RaySense"
+  },
+  {
+   "name": "RaySense_Slope",
+   "kind": "condition",
+   "desc": "Check slope (0:Surf, 1:F, 2:L, 3:R).",
+   "version": "1.0.0.0",
+   "components": [
+    {
+     "key": "Sensor(0:Surf, 1:F, 2:L, 3:R)",
+     "type": "numeric"
+    },
+    {
+     "key": "Comparison",
+     "type": "comparison"
+    },
+    {
+     "key": "Value",
+     "type": "numeric"
+    }
+   ],
+   "plugin": "Open Animation Replacer - RaySense"
+  },
+  {
+   "name": "RaySense_Verticality",
+   "kind": "condition",
+   "desc": "Check verticality diff (0:F, 1:L, 2:R, 3:Plyr, 4:Surf, 5:Plat, ",
+   "version": "1.0.0.0",
+   "components": [
+    {
+     "key": "Sensor(0:F, 1:L, 2:R, 3:Plyr, 4:Surf, 5:Plat, 6:CliffDist, 7:CliffDrop)",
+     "type": "numeric"
+    },
+    {
+     "key": "Comparison",
+     "type": "comparison"
+    },
+    {
+     "key": "Value",
+     "type": "numeric"
+    }
+   ],
+   "plugin": "Open Animation Replacer - RaySense"
+  },
+  {
+   "name": "RaySense_Wall",
+   "kind": "condition",
+   "desc": "Check wall dist (0:F, 1:FL, 2:FR, 3:L, 4:R).",
+   "version": "1.0.0.0",
+   "components": [
+    {
+     "key": "Sensor(0:F, 1:FL, 2:FR, 3:L, 4:R)",
+     "type": "numeric"
+    },
+    {
+     "key": "Comparison",
+     "type": "comparison"
+    },
+    {
+     "key": "Distance",
+     "type": "numeric"
+    }
+   ],
+   "plugin": "Open Animation Replacer - RaySense"
+  },
+  {
+   "name": "RaySense_WaterDepth",
+   "kind": "condition",
+   "desc": "Check water depth in Skyrim units (water surface Z - player Z).",
+   "version": "1.0.0.0",
+   "components": [
+    {
+     "key": "Comparison",
+     "type": "comparison"
+    },
+    {
+     "key": "Value",
+     "type": "numeric"
+    }
+   ],
+   "plugin": "Open Animation Replacer - RaySense"
+  },
+  {
+   "name": "CastSpell",
+   "kind": "function",
+   "desc": "Casts a spell.",
+   "version": "3.0.0.0",
+   "components": [
+    {
+     "key": "Spell FormID",
+     "type": "form"
+    },
+    {
+     "key": "Self target",
+     "type": "bool"
+    },
+    {
+     "key": "Effectiveness",
+     "type": "numeric"
+    },
+    {
+     "key": "Magnitude",
+     "type": "numeric"
+    }
+   ]
+  },
+  {
+   "name": "CONDITION",
+   "kind": "function",
+   "desc": "Run a set of functions only if the specified conditions evaluate to true.",
+   "version": "3.0.0.0",
+   "components": [
+    {
+     "key": "Conditions",
+     "type": "conditionFunctions"
+    }
+   ]
+  },
+  {
+   "name": "DispelSpell",
+   "kind": "function",
+   "desc": "Dispels a spell.",
+   "version": "3.0.0.0",
+   "components": [
+    {
+     "key": "Spell FormID",
+     "type": "form"
+    }
+   ]
+  },
+  {
+   "name": "FILENAME",
+   "kind": "function",
+   "desc": "Runs functions from the contained function set only if the current replacement animation matches the specified filename.",
+   "version": "3.1.0.0",
+   "components": [
+    {
+     "key": "Functions",
+     "type": "functions"
+    },
+    {
+     "key": "Filename",
+     "type": "text"
+    }
+   ]
+  },
+  {
+   "name": "ModActorValue",
+   "kind": "function",
+   "desc": "Modifies an actor value by a given value.",
+   "version": "3.0.0.0",
+   "components": [
+    {
+     "key": "Actor value",
+     "type": "numeric"
+    },
+    {
+     "key": "Value to modify by",
+     "type": "numeric"
+    }
+   ]
+  },
+  {
+   "name": "ModifyGraphVariable",
+   "kind": "function",
+   "desc": "Modifies a graph variable.",
+   "version": "3.1.0.0",
+   "components": [
+    {
+     "key": "Graph variable",
+     "type": "numeric"
+    },
+    {
+     "key": "Value to add",
+     "type": "numeric"
+    }
+   ]
+  },
+  {
+   "name": "ONE",
+   "kind": "function",
+   "desc": "Attempts to run functions from the contained function set in top-down order, until the first one succeeds. Mostly intended to be used with CONDITION functions inside, or other functions that contain an internal check before running.",
+   "version": "3.0.0.0",
+   "components": [
+    {
+     "key": "Functions",
+     "type": "functions"
+    }
+   ]
+  },
+  {
+   "name": "PlaySound",
+   "kind": "function",
+   "desc": "Plays a sound at the ref's location.",
+   "version": "3.0.0.0",
+   "components": [
+    {
+     "key": "Sound FormID",
+     "type": "form"
+    }
+   ]
+  },
+  {
+   "name": "RANDOM",
+   "kind": "function",
+   "desc": "Runs one random function from the contained function set.",
+   "version": "3.0.0.0",
+   "components": [
+    {
+     "key": "Functions",
+     "type": "functions"
+    }
+   ]
+  },
+  {
+   "name": "SendAnimEvent",
+   "kind": "function",
+   "desc": "Sends a behavior graph event.",
+   "version": "3.0.0.0",
+   "components": [
+    {
+     "key": "Event name",
+     "type": "text"
+    }
+   ]
+  },
+  {
+   "name": "SetGraphVariable",
+   "kind": "function",
+   "desc": "Sets a graph variable.",
+   "version": "3.0.0.0",
+   "components": [
+    {
+     "key": "Graph variable",
+     "type": "numeric"
+    },
+    {
+     "key": "Value to set",
+     "type": "numeric"
+    }
+   ]
+  },
+  {
+   "name": "SpawnParticle",
+   "kind": "function",
+   "desc": "Spawns a particle.",
+   "version": "3.0.0.0",
+   "components": [
+    {
+     "key": "Particle .nif path",
+     "type": "text",
+     "desc": "Relative to the meshes/ folder"
+    },
+    {
+     "key": "Actor node index",
+     "type": "numeric"
+    },
+    {
+     "key": "Scale",
+     "type": "numeric"
+    },
+    {
+     "key": "Play time",
+     "type": "numeric"
+    },
+    {
+     "key": "Offset",
+     "type": "point3"
+    }
+   ]
+  },
+  {
+   "name": "UnequipSlot",
+   "kind": "function",
+   "desc": "Unequips an item from the specified slot.",
+   "version": "3.0.0.0",
+   "components": [
+    {
+     "key": "Slot",
+     "type": "numeric",
+     "desc": "The equipment slot.",
+     "enum": [
+      [
+       0,
+       "Head"
+      ],
+      [
+       1,
+       "Hair"
+      ],
+      [
+       2,
+       "Body"
+      ],
+      [
+       3,
+       "Hands"
+      ],
+      [
+       4,
+       "Forearms"
+      ],
+      [
+       5,
+       "Amulet"
+      ],
+      [
+       6,
+       "Ring"
+      ],
+      [
+       7,
+       "Feet"
+      ],
+      [
+       8,
+       "Calves"
+      ],
+      [
+       9,
+       "Shield"
+      ],
+      [
+       10,
+       "Tail"
+      ],
+      [
+       11,
+       "LongHair"
+      ],
+      [
+       12,
+       "Circlet"
+      ],
+      [
+       13,
+       "Ears"
+      ],
+      [
+       14,
+       "ModMouth"
+      ],
+      [
+       15,
+       "ModNeck"
+      ],
+      [
+       16,
+       "ModChestPrimary"
+      ],
+      [
+       17,
+       "ModBack"
+      ],
+      [
+       18,
+       "ModMisc1"
+      ],
+      [
+       19,
+       "ModPelvisPrimary"
+      ],
+      [
+       20,
+       "DecapitateHead"
+      ],
+      [
+       21,
+       "Decapitate"
+      ],
+      [
+       22,
+       "ModPelvisSecondary"
+      ],
+      [
+       23,
+       "ModLegRight"
+      ],
+      [
+       24,
+       "ModLegLeft"
+      ],
+      [
+       25,
+       "ModFaceJewelry"
+      ],
+      [
+       26,
+       "ModChestSecondary"
+      ],
+      [
+       27,
+       "ModShoulder"
+      ],
+      [
+       28,
+       "ModArmLeft"
+      ],
+      [
+       29,
+       "ModArmRight"
+      ],
+      [
+       30,
+       "ModMisc2"
+      ],
+      [
+       31,
+       "FX01"
+      ]
+     ]
+    }
+   ]
+  }
+ ]
+}
